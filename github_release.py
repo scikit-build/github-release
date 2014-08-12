@@ -166,6 +166,3 @@ def handle_http_error(func):
         print e.response.content
         sys.exit(1)
 
-if __name__ == '__main__':
-    handle_http_error(gh_release)
-    #handle_http_error(gh_asset)
