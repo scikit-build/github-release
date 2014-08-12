@@ -6,7 +6,10 @@ import sys
 import requests
 from requests import request
 
-KEY = 'ebeb42747a0a7c1bec493b7cd5895ecc4bb844db'
+NOT_FOUND = object()
+KEY = os.environ.get('GITHUB_RELEASE_KEY', NOT_FOUND)
+if KEY == NOT_FOUND:
+    raise Exception('Cannot get environment variable GITHUB_RELEASE_KEY')
 AUTH = requests.auth.HTTPBasicAuth(KEY, 'x-oauth-basic')
 
 def print_asset_info(i, asset):
@@ -141,7 +144,7 @@ def gh_release():
         'publish': gh_release_publish,      # gh-release j0057/iplbapi publish 1.4.4
         'unpublish': gh_release_unpublish,  # gh-release j0057/iplbapi unpublish 1.4.4
     }
-    commands[args.pop(1)](*args)
+    return handle_http_error(lambda: commands[args.pop(1)](*args))
 
 def gh_asset():
     args = sys.argv[1:]
@@ -152,17 +155,17 @@ def gh_asset():
         'download': gh_asset_download,      # gh-asset j0057/iplbapi download 1.4.4 bla-bla_1.4.4.whl
         'erase': gh_asset_erase,            # gh-asset j0057/iplbapi erase 1.4.4 bla-bla_1.4.4.whl
     }
-    commands[args.pop(1)](*args)
+    return handle_http_error(lambda: commands[args.pop(1)](*args))
 
 def handle_http_error(func):
     try:
         func()
-        sys.exit(0)
+        return 0
     except requests.exceptions.HTTPError as e:
         print e
         print e.request
         print e.request.url
         print e.response
         print e.response.content
-        sys.exit(1)
+        return 1
 
