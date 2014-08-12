@@ -124,7 +124,8 @@ def gh_asset_download(repo_name, tag_name=None, asset_name=None):
                 method='GET',
                 url='https://api.github.com/repos/{0}/releases/assets/{1}'.format(repo_name, asset['id']),
                 auth=AUTH,
-                allow_redirects=False)
+                allow_redirects=False,
+                headers={'Accept':'application/octet-stream'})
             while response.status_code == 302:
                 response = request('GET', response.headers['Location'], allow_redirects=False)
             with open(asset_name, 'w+b') as f:
@@ -166,5 +167,5 @@ def handle_http_error(func):
         sys.exit(1)
 
 if __name__ == '__main__':
-    #handle_http_error(gh_release)
-    handle_http_error(gh_asset)
+    handle_http_error(gh_release)
+    #handle_http_error(gh_asset)
