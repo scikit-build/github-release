@@ -182,13 +182,15 @@ def handle_http_error(func):
         print '<', e.request.method, e.request.path_url
         for k in sorted(e.request.headers.keys()):
             print '<', k, ':', e.request.headers[k]
-        print '<'
-        print '<', repr(e.request.body[:35]), '(total {0} bytes of data)'.format(len(e.request.body))
+        if e.request.body:
+            print '<'
+            print '<', repr(e.request.body[:35]), '(total {0} bytes of data)'.format(len(e.request.body))
         print
         print '>', e.response.status_code, e.response.reason
         for k in sorted(e.response.headers.keys()):
-            print '>', k.capitalize(), ':', e.response.headers[k]
-        print '>'
-        print '>', repr(e.response.content[:35]), '(total {0} bytes of data)'.format(len(e.response.content))
+            print '>', k.title(), ':', e.response.headers[k]
+        if e.response.content:
+            print '>'
+            print '>', repr(e.response.content[:35]), '(total {0} bytes of data)'.format(len(e.response.content))
         return 1
 
