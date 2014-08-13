@@ -169,6 +169,7 @@ def gh_asset():
                                             # gh-asset j0057/iplbapi download
                                             # gh-asset j0057/iplbapi download 1.4.4
         'download': gh_asset_download,      # gh-asset j0057/iplbapi download 1.4.4 bla-bla_1.4.4.whl
+        'delete': gh_asset_erase,           # gh-asset j0057/iplbapi erase 1.4.4 bla-bla_1.4.4.whl
         'erase': gh_asset_erase,            # gh-asset j0057/iplbapi erase 1.4.4 bla-bla_1.4.4.whl
     }
     return handle_http_error(lambda: commands[args.pop(1)](*args))
