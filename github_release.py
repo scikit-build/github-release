@@ -138,7 +138,7 @@ def gh_asset_download(repo_name, tag_name=None, asset_name=None):
                 continue
             if os.path.exists(asset['name']):
                 continue
-            print 'downloading {0} from release {1}'.format(asset['name'], release['tag_name'])
+            print 'release {0}: downloading {1}'.format(release['tag_name'], asset['name'])
             response = request(
                 method='GET',
                 url='https://api.github.com/repos/{0}/releases/assets/{1}'.format(repo_name, asset['id']),
@@ -146,7 +146,7 @@ def gh_asset_download(repo_name, tag_name=None, asset_name=None):
                 headers={'Accept':'application/octet-stream'})
             while response.status_code == 302:
                 response = request('GET', response.headers['Location'], allow_redirects=False)
-            with open(asset_name, 'w+b') as f:
+            with open(asset['name'], 'w+b') as f:
                 f.write(response.content)
 
 def gh_release():
