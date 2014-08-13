@@ -178,10 +178,17 @@ def handle_http_error(func):
         func()
         return 0
     except requests.exceptions.HTTPError as e:
-        print e
-        print e.request
-        print e.request.url
-        print e.response
-        print e.response.content
+        print 'Error sending {0} to {1}'.format(e.request.method, e.request.url)
+        print '<', e.request.method, e.request.path_url
+        for k in sorted(e.request.headers.keys()):
+            print '<', k, ':', e.request.headers[k]
+        print '<'
+        print '<', repr(e.request.body[:35]), '(total {0} bytes of data)'.format(len(e.request.body))
+        print
+        print '>', e.response.status_code, e.response.reason
+        for k in sorted(e.response.headers.keys()):
+            print '>', k.capitalize(), ':', e.response.headers[k]
+        print '>'
+        print '>', repr(e.response.content[:35]), '(total {0} bytes of data)'.format(len(e.response.content))
         return 1
 
