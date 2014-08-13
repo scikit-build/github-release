@@ -114,7 +114,7 @@ def gh_release_notes(repo_name, tag_name):
 
 def gh_asset_upload(repo_name, tag_name, filename):
     release = get_release_info(repo_name, tag_name)
-    with open(filename) as f:
+    with open(filename, 'rb') as f:
         basename = os.path.basename(filename)
         response = request('POST', 
             'https://uploads.github.com/repos/{0}/releases/{1}/assets?name={2}'.format(repo_name, release['id'], basename),
