@@ -6,12 +6,6 @@ import sys
 import requests
 from requests import request
 
-NOT_FOUND = object()
-KEY = os.environ.get('GITHUB_RELEASE_KEY', NOT_FOUND)
-if KEY == NOT_FOUND:
-    raise Exception('Cannot get environment variable GITHUB_RELEASE_KEY')
-AUTH = requests.auth.HTTPBasicAuth(KEY, 'x-oauth-basic')
-
 def print_asset_info(i, asset):
     print '  Asset #{i} name     : {name}'.format(i=i, **asset)
     print '  Asset #{i} size     : {size}'.format(i=i, **asset)
@@ -36,7 +30,7 @@ def print_release_info(release):
         print_asset_info(i, asset)
 
 def get_releases(repo_name):
-    response = request('GET', 'https://api.github.com/repos/{0}/releases'.format(repo_name), auth=AUTH)
+    response = request('GET', 'https://api.github.com/repos/{0}/releases'.format(repo_name))
     response.raise_for_status()
     return response.json()
 
@@ -57,7 +51,7 @@ def get_asset_info(repo_name, tag_name, filename):
         raise Exception('Asset with filename {0} not found in release with tag_name {1}'.format(filename, tag_name))
 
 def gh_release_list(repo_name):
-    response = request('GET', 'https://api.github.com/repos/{0}/releases'.format(repo_name), auth=AUTH)
+    response = request('GET', 'https://api.github.com/repos/{0}/releases'.format(repo_name))
     response.raise_for_status()
     map(print_release_info, sorted(response.json(), key=lambda r: r['tag_name']))
 
@@ -67,7 +61,7 @@ def gh_release_info(repo_name, tag_name):
 
 def gh_release_create(repo_name, tag_name):
     data = json.dumps({'tag_name': tag_name, 'draft': True})
-    response = request('POST', 'https://api.github.com/repos/{0}/releases'.format(repo_name), auth=AUTH, 
+    response = request('POST', 'https://api.github.com/repos/{0}/releases'.format(repo_name),
         data=json.dumps({'tag_name': tag_name, 'draft': True}),
         headers={'Content-Type': 'application/json'})
     response.raise_for_status()
@@ -75,24 +69,29 @@ def gh_release_create(repo_name, tag_name):
 
 def gh_release_delete(repo_name, tag_name):
     release = get_release_info(repo_name, tag_name)
-    response = request('DELETE', 
-        'https://api.github.com/repos/{0}/releases/{1}'.format(repo_name, release['id']), 
-        auth=AUTH)
+    response = request('DELETE', 'https://api.github.com/repos/{0}/releases/{1}'.format(repo_name, release['id']))
     response.raise_for_status()
 
-def gh_release_set_draft(repo_name, tag_name, is_draft):
+def gh_release_patch(repo_name, tag_name, **values):
     release = get_release_info(repo_name, tag_name)
-    response = request('PATCH', 'https://api.github.com/{0}/releases/{1}'.format(repo_name, release['id']),
-        auth=AUTH,
-        data=json.dumps({'draft': is_draft}),
+    data = {
+        "tag_name": release["tag_name"],
+        "target_commitish": release["target_commitish"],
+        "name": release["name"],
+        "body": release["body"],
+        "draft": release["draft"],
+        "prerelease": release["prerelease"] }
+    data.update(values)
+    response = request('PATCH', 'https://api.github.com/repos/{0}/releases/{1}'.format(repo_name, release['id']),
+        data=json.dumps(data),
         headers={'Content-Type': 'application/json'})
     response.raise_for_status()
 
 def gh_release_publish(repo_name, tag_name):
-    gh_release_set_draft(repo_name, tag_name, is_draft=False)
+    gh_release_patch(repo_name, tag_name, draft=False)
 
 def gh_release_unpublish(repo_name, tag_name):
-    gh_release_set_draft(repo_name, tag_name, is_draft=True)
+    gh_release_patch(repo_name, tag_name, draft=True)
 
 def gh_asset_upload(repo_name, tag_name, filename):
     release = get_release_info(repo_name, tag_name)
@@ -101,15 +100,13 @@ def gh_asset_upload(repo_name, tag_name, filename):
         response = request('POST', 
             'https://uploads.github.com/repos/{0}/releases/{1}/assets?name={2}'.format(repo_name, release['id'], basename),
             headers={'Content-Type':'application/octet-stream'},
-            auth=AUTH,
             data=f.read())
         response.raise_for_status()
 
 def gh_asset_erase(repo_name, tag_name, filename):
     asset = get_asset_info(repo_name, tag_name, filename)
     response = request('DELETE',
-        'https://api.github.com/repos/{0}/releases/assets/{1}'.format(repo_name, asset['id']),
-        auth=AUTH)
+        'https://api.github.com/repos/{0}/releases/assets/{1}'.format(repo_name, asset['id']))
     response.raise_for_status()
 
 def gh_asset_download(repo_name, tag_name=None, asset_name=None):
@@ -126,7 +123,6 @@ def gh_asset_download(repo_name, tag_name=None, asset_name=None):
             response = request(
                 method='GET',
                 url='https://api.github.com/repos/{0}/releases/assets/{1}'.format(repo_name, asset['id']),
-                auth=AUTH,
                 allow_redirects=False,
                 headers={'Accept':'application/octet-stream'})
             while response.status_code == 302:
