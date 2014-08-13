@@ -74,3 +74,25 @@ It understands the following commands:
 | download  | tagname filename  | download file to current directory                        |
 | delete    | tagname filename  | delete a file from a release                              |
 
+When specifying filenames, shell-like wildcards are supported, but make sure to
+quote using single quotes, i.e. don't let the shell expand the wildcard pattern.
+
+For the `download` command, you also need to specify a tagname of '\*'
+
+Examples:
+
+```
+$ # upload all example-project-1.4* files in /home/me/pkg
+$ github-asset octocat/example-project upload 1.4 '/home/me/pkg/example-project-1.4*'
+
+$ # download all wheels from all releases
+$ github-asset octocat/example-project download '*' '*.whl'
+
+$ # download all files from release 1.4
+$ github-asset octocat/example-project download 1.4
+
+$ # download all files from example-project
+# github-asset octocat/example-project download
+```
+
+
