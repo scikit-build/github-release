@@ -3,6 +3,8 @@
 import json
 import os
 import sys
+import tempfile
+
 import requests
 from requests import request
 
@@ -93,6 +95,23 @@ def gh_release_publish(repo_name, tag_name):
 def gh_release_unpublish(repo_name, tag_name):
     patch_release(repo_name, tag_name, draft=True)
 
+def gh_release_notes(repo_name, tag_name):
+    release = get_release_info(repo_name, tag_name)
+    (_, filename) = tempfile.mkstemp(suffix='.md')
+    try:
+        if release['body']:
+            with open(filename, 'w+b') as f:
+                f.write(release['body'])
+        ret = os.system('{0} {1}'.format(os.environ['EDITOR'], filename))
+        if ret: raise Exception('{0} returned exit code {1}'.format(os.environ['EDITOR'], ret))
+        with open(filename, 'rb') as f:
+            body = f.read()
+        if release['body'] == body:
+            return
+        patch_release(repo_name, tag_name, body=body)
+    finally:
+        os.remove(filename)
+
 def gh_asset_upload(repo_name, tag_name, filename):
     release = get_release_info(repo_name, tag_name)
     with open(filename) as f:
@@ -139,6 +158,7 @@ def gh_release():
         'delete': gh_release_delete,        # gh-release j0057/iplbapi delete 1.4.4
         'publish': gh_release_publish,      # gh-release j0057/iplbapi publish 1.4.4
         'unpublish': gh_release_unpublish,  # gh-release j0057/iplbapi unpublish 1.4.4
+        'release-notes': gh_release_notes,  # gh-release j0057/iplbapi release-notes 1.4.3
     }
     return handle_http_error(lambda: commands[args.pop(1)](*args))
 
