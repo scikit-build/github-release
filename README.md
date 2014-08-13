@@ -34,7 +34,7 @@ password x-oauth-basic
 
 Done!
 
-[1] https://github.com/settings/applications
+[1]: https://github.com/settings/applications
 
 ## installed scripts
 
