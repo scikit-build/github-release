@@ -1,5 +1,7 @@
 #!/usr/bin/env python2.7
 
+import fnmatch
+import glob
 import json
 import os
 import sys
@@ -112,29 +114,34 @@ def gh_release_notes(repo_name, tag_name):
     finally:
         os.remove(filename)
 
-def gh_asset_upload(repo_name, tag_name, filename):
+def gh_asset_upload(repo_name, tag_name, pattern):
     release = get_release_info(repo_name, tag_name)
-    with open(filename, 'rb') as f:
-        basename = os.path.basename(filename)
-        response = request('POST', 
-            'https://uploads.github.com/repos/{0}/releases/{1}/assets?name={2}'.format(repo_name, release['id'], basename),
-            headers={'Content-Type':'application/octet-stream'},
-            data=f.read())
+    for filename in glob.glob(filename):
+        with open(filename, 'rb') as f:
+            basename = os.path.basename(filename)
+            response = request('POST', 
+                'https://uploads.github.com/repos/{0}/releases/{1}/assets?name={2}'.format(repo_name, release['id'], basename),
+                headers={'Content-Type':'application/octet-stream'},
+                data=f.read())
+            response.raise_for_status()
+
+def gh_asset_erase(repo_name, tag_name, pattern):
+    #asset = get_asset_info(repo_name, tag_name, filename)
+    release = get_releases(repo_name)
+    for asset in release['assets']:
+        if not fnmatch.fnmatch(asset['name'], pattern):
+            continue
+        response = request('DELETE',
+            'https://api.github.com/repos/{0}/releases/assets/{1}'.format(repo_name, asset['id']))
         response.raise_for_status()
 
-def gh_asset_erase(repo_name, tag_name, filename):
-    asset = get_asset_info(repo_name, tag_name, filename)
-    response = request('DELETE',
-        'https://api.github.com/repos/{0}/releases/assets/{1}'.format(repo_name, asset['id']))
-    response.raise_for_status()
-
-def gh_asset_download(repo_name, tag_name=None, asset_name=None):
+def gh_asset_download(repo_name, tag_name=None, pattern=None):
     releases = get_releases(repo_name)
     for release in releases:
-        if tag_name and release['tag_name'] != tag_name:
+        if tag_name and not fnmatch.fnmatch(release['tag_name'], tag_name):
             continue
         for asset in release['assets']:
-            if asset_name and asset['name'] != asset_name:
+            if pattern and not fnmatch.fnmatch(asset['name'], pattern):
                 continue
             if os.path.exists(asset['name']):
                 continue
