@@ -116,7 +116,7 @@ def gh_release_notes(repo_name, tag_name):
 
 def gh_asset_upload(repo_name, tag_name, pattern):
     release = get_release_info(repo_name, tag_name)
-    for filename in glob.glob(filename):
+    for filename in glob.glob(pattern):
         with open(filename, 'rb') as f:
             basename = os.path.basename(filename)
             response = request('POST', 
@@ -126,7 +126,6 @@ def gh_asset_upload(repo_name, tag_name, pattern):
             response.raise_for_status()
 
 def gh_asset_erase(repo_name, tag_name, pattern):
-    #asset = get_asset_info(repo_name, tag_name, filename)
     release = get_releases(repo_name)
     for asset in release['assets']:
         if not fnmatch.fnmatch(asset['name'], pattern):
