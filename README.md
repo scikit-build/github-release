@@ -44,7 +44,7 @@ The package installs two scripts, github-release and github-asset
 
 This script deals with releases. The general usage is:
 
-    github-release [username]/[reponame] [command] [tag]
+    github-release username/reponame command [tag]
 
 It understands the following commands:
 
@@ -72,6 +72,5 @@ It understands the following commands:
 | download  |                   | download all files from all releases to current directory |
 | download  | tagname           | download all files from a release to current directory    |
 | download  | tagname filename  | download file to current directory                        |
-| ~erase~   |                   |                                                           |
 | delete    | tagname filename  | delete a file from a release                              |
 
