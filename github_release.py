@@ -42,6 +42,21 @@ def get_release_info(repo_name, tag_name):
     except StopIteration:
         raise Exception('Release with tag_name {0} not found'.format(tag_name))
 
+def patch_release(repo_name, tag_name, **values):
+    release = get_release_info(repo_name, tag_name)
+    data = {
+        "tag_name": release["tag_name"],
+        "target_commitish": release["target_commitish"],
+        "name": release["name"],
+        "body": release["body"],
+        "draft": release["draft"],
+        "prerelease": release["prerelease"] }
+    data.update(values)
+    response = request('PATCH', 'https://api.github.com/repos/{0}/releases/{1}'.format(repo_name, release['id']),
+        data=json.dumps(data),
+        headers={'Content-Type': 'application/json'})
+    response.raise_for_status()
+
 def get_asset_info(repo_name, tag_name, filename):
     release = get_release_info(repo_name, tag_name)
     try:
@@ -72,26 +87,11 @@ def gh_release_delete(repo_name, tag_name):
     response = request('DELETE', 'https://api.github.com/repos/{0}/releases/{1}'.format(repo_name, release['id']))
     response.raise_for_status()
 
-def gh_release_patch(repo_name, tag_name, **values):
-    release = get_release_info(repo_name, tag_name)
-    data = {
-        "tag_name": release["tag_name"],
-        "target_commitish": release["target_commitish"],
-        "name": release["name"],
-        "body": release["body"],
-        "draft": release["draft"],
-        "prerelease": release["prerelease"] }
-    data.update(values)
-    response = request('PATCH', 'https://api.github.com/repos/{0}/releases/{1}'.format(repo_name, release['id']),
-        data=json.dumps(data),
-        headers={'Content-Type': 'application/json'})
-    response.raise_for_status()
-
 def gh_release_publish(repo_name, tag_name):
-    gh_release_patch(repo_name, tag_name, draft=False)
+    patch_release(repo_name, tag_name, draft=False)
 
 def gh_release_unpublish(repo_name, tag_name):
-    gh_release_patch(repo_name, tag_name, draft=True)
+    patch_release(repo_name, tag_name, draft=True)
 
 def gh_asset_upload(repo_name, tag_name, filename):
     release = get_release_info(repo_name, tag_name)
