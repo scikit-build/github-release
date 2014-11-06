@@ -77,7 +77,7 @@ It understands the following commands:
 When specifying filenames, shell-like wildcards are supported, but make sure to
 quote using single quotes, i.e. don't let the shell expand the wildcard pattern.
 
-For the `download` command, you also need to specify a tagname of '\*'
+For the `download` command, you also need to specify a tagname of `'*'`
 
 Examples:
 
