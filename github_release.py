@@ -7,6 +7,8 @@ import os
 import sys
 import tempfile
 
+from pprint import pprint
+
 import requests
 from requests import request
 
@@ -114,16 +116,19 @@ def gh_release_notes(repo_name, tag_name):
     finally:
         os.remove(filename)
 
+def gh_release_debug(repo_name, tag_name):
+    release = get_release_info(repo_name, tag_name)
+    pprint(release)
+
 def gh_asset_upload(repo_name, tag_name, pattern):
     release = get_release_info(repo_name, tag_name)
     for filename in glob.glob(pattern):
         print 'release {0}: uploading {1}'.format(tag_name, filename)
         with open(filename, 'rb') as f:
             basename = os.path.basename(filename)
-            response = request('POST', 
-                'https://uploads.github.com/repos/{0}/releases/{1}/assets?name={2}'.format(repo_name, release['id'], basename),
-                headers={'Content-Type':'application/octet-stream'},
-                data=f.read())
+            url = 'https://uploads.github.com/repos/{0}/releases/{1}/assets?name={2}'.format(repo_name, release['id'], basename)
+            print 'url:', url
+            response = request('POST', url, headers={'Content-Type':'application/octet-stream'}, data=f.read())
             response.raise_for_status()
 
 def gh_asset_erase(repo_name, tag_name, pattern):
@@ -167,6 +172,7 @@ def gh_release():
         'publish': gh_release_publish,      # gh-release j0057/iplbapi publish 1.4.4
         'unpublish': gh_release_unpublish,  # gh-release j0057/iplbapi unpublish 1.4.4
         'release-notes': gh_release_notes,  # gh-release j0057/iplbapi release-notes 1.4.3
+        'debug': gh_release_debug           # gh-release j0057/iplbapi debug 1.4.3
     }
     return handle_http_error(lambda: commands[args.pop(1)](*args))
 
