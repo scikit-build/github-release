@@ -5,7 +5,6 @@ import fnmatch
 import glob
 import json
 import os
-import sys
 import tempfile
 
 from functools import wraps
@@ -13,6 +12,7 @@ from pprint import pprint
 
 import requests
 from requests import request
+
 
 def print_asset_info(i, asset):
     print('  Asset #{i} name     : {name}'.format(i=i, **asset))
@@ -38,10 +38,12 @@ def print_release_info(release):
     for (i, asset) in enumerate(release['assets']):
         print_asset_info(i, asset)
 
+
 def get_releases(repo_name):
     response = request('GET', 'https://api.github.com/repos/{0}/releases'.format(repo_name))
     response.raise_for_status()
     return response.json()
+
 
 def get_release_info(repo_name, tag_name):
     releases = get_releases(repo_name)
@@ -51,6 +53,7 @@ def get_release_info(repo_name, tag_name):
     except StopIteration:
         raise Exception('Release with tag_name {0} not found'.format(tag_name))
 
+
 def patch_release(repo_name, tag_name, **values):
     release = get_release_info(repo_name, tag_name)
     data = {
@@ -59,12 +62,15 @@ def patch_release(repo_name, tag_name, **values):
         "name": release["name"],
         "body": release["body"],
         "draft": release["draft"],
-        "prerelease": release["prerelease"] }
+        "prerelease": release["prerelease"]
+    }
     data.update(values)
-    response = request('PATCH', 'https://api.github.com/repos/{0}/releases/{1}'.format(repo_name, release['id']),
-        data=json.dumps(data),
-        headers={'Content-Type': 'application/json'})
+    response = request('PATCH', 'https://api.github.com/repos/{0}/releases/{1}'.format(
+          repo_name, release['id']),
+          data=json.dumps(data),
+          headers={'Content-Type': 'application/json'})
     response.raise_for_status()
+
 
 def get_asset_info(repo_name, tag_name, filename):
     release = get_release_info(repo_name, tag_name)
@@ -73,6 +79,7 @@ def get_asset_info(repo_name, tag_name, filename):
         return asset
     except StopIteration:
         raise Exception('Asset with filename {0} not found in release with tag_name {1}'.format(filename, tag_name))
+
 
 def gh_release_list(repo_name):
     response = request('GET', 'https://api.github.com/repos/{0}/releases'.format(repo_name))
@@ -85,6 +92,7 @@ gh_release_list.description = {
   "params": ["repo_name"]
 }
 
+
 def gh_release_info(repo_name, tag_name):
     release = get_release_info(repo_name, tag_name)
     print_release_info(release)
@@ -95,11 +103,13 @@ gh_release_info.description = {
   "params": ["repo_name", "tag_name"]
 }
 
+
 def gh_release_create(repo_name, tag_name):
-    data = json.dumps({'tag_name': tag_name, 'draft': True})
-    response = request('POST', 'https://api.github.com/repos/{0}/releases'.format(repo_name),
-        data=json.dumps({'tag_name': tag_name, 'draft': True}),
-        headers={'Content-Type': 'application/json'})
+    data = {'tag_name': tag_name, 'draft': True}
+    response = request(
+          'POST', 'https://api.github.com/repos/{0}/releases'.format(repo_name),
+          data=json.dumps(data),
+          headers={'Content-Type': 'application/json'})
     response.raise_for_status()
     print_release_info(response.json())
 
@@ -108,6 +118,7 @@ gh_release_create.description = {
   "help": "Create a release",
   "params": ["repo_name", "tag_name"]
 }
+
 
 def gh_release_delete(repo_name, tag_name):
     release = get_release_info(repo_name, tag_name)
@@ -130,6 +141,7 @@ gh_release_publish.description = {
   "params": ["repo_name", "tag_name"]
 }
 
+
 def gh_release_unpublish(repo_name, tag_name):
     patch_release(repo_name, tag_name, draft=True)
 
@@ -148,7 +160,8 @@ def gh_release_notes(repo_name, tag_name):
             with open(filename, 'w+b') as f:
                 f.write(release['body'])
         ret = os.system('{0} {1}'.format(os.environ['EDITOR'], filename))
-        if ret: raise Exception('{0} returned exit code {1}'.format(os.environ['EDITOR'], ret))
+        if ret:
+            raise Exception('{0} returned exit code {1}'.format(os.environ['EDITOR'], ret))
         with open(filename, 'rb') as f:
             body = f.read()
         if release['body'] == body:
@@ -174,6 +187,7 @@ gh_release_debug.description = {
   "params": ["repo_name", "tag_name"]
 }
 
+
 def gh_asset_upload(repo_name, tag_name, pattern):
     release = get_release_info(repo_name, tag_name)
     for filename in glob.glob(pattern):
@@ -182,7 +196,7 @@ def gh_asset_upload(repo_name, tag_name, pattern):
             basename = os.path.basename(filename)
             url = 'https://uploads.github.com/repos/{0}/releases/{1}/assets?name={2}'.format(repo_name, release['id'], basename)
             print('url:', url)
-            response = request('POST', url, headers={'Content-Type':'application/octet-stream'}, data=f.read())
+            response = request('POST', url, headers={'Content-Type': 'application/octet-stream'}, data=f.read())
             response.raise_for_status()
 
 
@@ -191,14 +205,16 @@ gh_asset_upload.description = {
   "params": ["repo_name", "tag_name", "pattern"]
 }
 
+
 def gh_asset_erase(repo_name, tag_name, pattern):
     release = get_release_info(repo_name, tag_name)
     for asset in release['assets']:
         if not fnmatch.fnmatch(asset['name'], pattern):
             continue
         print('release {0}: deleting {1}'.format(tag_name, asset['name']))
-        response = request('DELETE',
-            'https://api.github.com/repos/{0}/releases/assets/{1}'.format(repo_name, asset['id']))
+        response = request(
+              'DELETE',
+              'https://api.github.com/repos/{0}/releases/assets/{1}'.format(repo_name, asset['id']))
         response.raise_for_status()
 
 
@@ -206,6 +222,7 @@ gh_asset_erase.description = {
   "help": "Delete release assets",
   "params": ["repo_name", "tag_name", "pattern"]
 }
+
 
 def gh_asset_download(repo_name, tag_name=None, pattern=None):
     releases = get_releases(repo_name)
@@ -222,7 +239,7 @@ def gh_asset_download(repo_name, tag_name=None, pattern=None):
                 method='GET',
                 url='https://api.github.com/repos/{0}/releases/assets/{1}'.format(repo_name, asset['id']),
                 allow_redirects=False,
-                headers={'Accept':'application/octet-stream'})
+                headers={'Accept': 'application/octet-stream'})
             while response.status_code == 302:
                 response = request('GET', response.headers['Location'], allow_redirects=False)
             with open(asset['name'], 'w+b') as f:
@@ -235,6 +252,7 @@ gh_asset_download.description = {
   "optional_params": ["tag_name", "pattern"]
 }
 
+
 RELEASE_COMMANDS = {
     'list': gh_release_list,            # gh-release j0057/iplbapi list
     'info': gh_release_info,            # gh-release j0057/iplbapi info 1.4.3
@@ -245,6 +263,7 @@ RELEASE_COMMANDS = {
     'release-notes': gh_release_notes,  # gh-release j0057/iplbapi release-notes 1.4.3
     'debug': gh_release_debug           # gh-release j0057/iplbapi debug 1.4.3
 }
+
 
 def handle_http_error(func):
     @wraps(func)
@@ -269,6 +288,7 @@ def handle_http_error(func):
             return 1
     return with_error_handling
 
+
 def _gh_parser(commands):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("repo_name", type=str)
@@ -291,6 +311,7 @@ def _gh_parser(commands):
 
     return parser
 
+
 @handle_http_error
 def gh_release():
     args = _gh_parser(RELEASE_COMMANDS).parse_args()
@@ -306,6 +327,7 @@ ASSET_COMMANDS = {
     'delete': gh_asset_erase,           # gh-asset j0057/iplbapi erase 1.4.4 bla-bla_1.4.4.whl
     'erase': gh_asset_erase,            # gh-asset j0057/iplbapi erase 1.4.4 bla-bla_1.4.4.whl
 }
+
 
 @handle_http_error
 def gh_asset():
