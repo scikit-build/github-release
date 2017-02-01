@@ -161,32 +161,33 @@ def gh_asset_download(repo_name, tag_name=None, pattern=None):
                 response = request('GET', response.headers['Location'], allow_redirects=False)
             with open(asset['name'], 'w+b') as f:
                 f.write(response.content)
+RELEASE_COMMANDS = {
+    'list': gh_release_list,            # gh-release j0057/iplbapi list
+    'info': gh_release_info,            # gh-release j0057/iplbapi info 1.4.3
+    'create': gh_release_create,        # gh-release j0057/iplbapi create 1.4.4
+    'delete': gh_release_delete,        # gh-release j0057/iplbapi delete 1.4.4
+    'publish': gh_release_publish,      # gh-release j0057/iplbapi publish 1.4.4
+    'unpublish': gh_release_unpublish,  # gh-release j0057/iplbapi unpublish 1.4.4
+    'release-notes': gh_release_notes,  # gh-release j0057/iplbapi release-notes 1.4.3
+    'debug': gh_release_debug           # gh-release j0057/iplbapi debug 1.4.3
+}
 
 def gh_release():
     args = sys.argv[1:]
-    commands = {
-        'list': gh_release_list,            # gh-release j0057/iplbapi list
-        'info': gh_release_info,            # gh-release j0057/iplbapi info 1.4.3
-        'create': gh_release_create,        # gh-release j0057/iplbapi create 1.4.4
-        'delete': gh_release_delete,        # gh-release j0057/iplbapi delete 1.4.4
-        'publish': gh_release_publish,      # gh-release j0057/iplbapi publish 1.4.4
-        'unpublish': gh_release_unpublish,  # gh-release j0057/iplbapi unpublish 1.4.4
-        'release-notes': gh_release_notes,  # gh-release j0057/iplbapi release-notes 1.4.3
-        'debug': gh_release_debug           # gh-release j0057/iplbapi debug 1.4.3
-    }
-    return handle_http_error(lambda: commands[args.pop(1)](*args))
+    return handle_http_error(lambda: RELEASE_COMMANDS[args.pop(1)](*args))
+
+ASSET_COMMANDS = {
+    'upload': gh_asset_upload,          # gh-asset j0057/iplbapi upload 1.4.4 bla-bla_1.4.4.whl
+                                        # gh-asset j0057/iplbapi download
+                                        # gh-asset j0057/iplbapi download 1.4.4
+    'download': gh_asset_download,      # gh-asset j0057/iplbapi download 1.4.4 bla-bla_1.4.4.whl
+    'delete': gh_asset_erase,           # gh-asset j0057/iplbapi erase 1.4.4 bla-bla_1.4.4.whl
+    'erase': gh_asset_erase,            # gh-asset j0057/iplbapi erase 1.4.4 bla-bla_1.4.4.whl
+}
 
 def gh_asset():
-    args = sys.argv[1:]
-    commands = {
-        'upload': gh_asset_upload,          # gh-asset j0057/iplbapi upload 1.4.4 bla-bla_1.4.4.whl
-                                            # gh-asset j0057/iplbapi download
-                                            # gh-asset j0057/iplbapi download 1.4.4
-        'download': gh_asset_download,      # gh-asset j0057/iplbapi download 1.4.4 bla-bla_1.4.4.whl
-        'delete': gh_asset_erase,           # gh-asset j0057/iplbapi erase 1.4.4 bla-bla_1.4.4.whl
-        'erase': gh_asset_erase,            # gh-asset j0057/iplbapi erase 1.4.4 bla-bla_1.4.4.whl
-    }
-    return handle_http_error(lambda: commands[args.pop(1)](*args))
+    args = vars(gh_asset_parser().parse_args())
+    return handle_http_error(lambda: ASSET_COMMANDS[args.pop(1)](*args))
 
 def handle_http_error(func):
     try:
