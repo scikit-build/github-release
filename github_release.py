@@ -15,24 +15,25 @@ import requests
 from requests import request
 
 def print_asset_info(i, asset):
-    print '  Asset #{i} name     : {name}'.format(i=i, **asset)
-    print '  Asset #{i} size     : {size}'.format(i=i, **asset)
-    print '  Asset #{i} uploader : {login}'.format(i=i, **asset['uploader'])
-    print '  Asset #{i} URL      : {browser_download_url}'.format(i=i, **asset)
-    print
+    print('  Asset #{i} name     : {name}'.format(i=i, **asset))
+    print('  Asset #{i} size     : {size}'.format(i=i, **asset))
+    print('  Asset #{i} uploader : {login}'.format(i=i, **asset['uploader']))
+    print('  Asset #{i} URL      : {browser_download_url}'.format(i=i, **asset))
+    print('')
+
 
 def print_release_info(release):
-    print  'Tag name      : {tag_name}'.format(**release)
+    print('Tag name      : {tag_name}'.format(**release))
     if release['name']:
-     print 'Name          : {name}'.format(**release) 
-    print  'ID            : {id}'.format(**release)
-    print  'Created       : {created_at}'.format(**release)
-    print  'URL           : {html_url}'.format(**release)
-    print  'Author        : {login}'.format(**release['author'])
-    print  'Is published  : {0}'.format(not release['draft'])
+        print('Name          : {name}'.format(**release))
+    print('ID            : {id}'.format(**release))
+    print('Created       : {created_at}'.format(**release))
+    print('URL           : {html_url}'.format(**release))
+    print('Author        : {login}'.format(**release['author']))
+    print('Is published  : {0}'.format(not release['draft']))
     if release['body']:
-     print 'Release notes :'
-     print release['body']
+        print('Release notes :')
+        print(release['body'])
     print
     for (i, asset) in enumerate(release['assets']):
         print_asset_info(i, asset)
@@ -176,11 +177,11 @@ gh_release_debug.description = {
 def gh_asset_upload(repo_name, tag_name, pattern):
     release = get_release_info(repo_name, tag_name)
     for filename in glob.glob(pattern):
-        print 'release {0}: uploading {1}'.format(tag_name, filename)
+        print('release {0}: uploading {1}'.format(tag_name, filename))
         with open(filename, 'rb') as f:
             basename = os.path.basename(filename)
             url = 'https://uploads.github.com/repos/{0}/releases/{1}/assets?name={2}'.format(repo_name, release['id'], basename)
-            print 'url:', url
+            print('url:', url)
             response = request('POST', url, headers={'Content-Type':'application/octet-stream'}, data=f.read())
             response.raise_for_status()
 
@@ -195,7 +196,7 @@ def gh_asset_erase(repo_name, tag_name, pattern):
     for asset in release['assets']:
         if not fnmatch.fnmatch(asset['name'], pattern):
             continue
-        print 'release {0}: deleting {1}'.format(tag_name, asset['name'])
+        print('release {0}: deleting {1}'.format(tag_name, asset['name']))
         response = request('DELETE',
             'https://api.github.com/repos/{0}/releases/assets/{1}'.format(repo_name, asset['id']))
         response.raise_for_status()
@@ -216,7 +217,7 @@ def gh_asset_download(repo_name, tag_name=None, pattern=None):
                 continue
             if os.path.exists(asset['name']):
                 continue
-            print 'release {0}: downloading {1}'.format(release['tag_name'], asset['name'])
+            print('release {0}: downloading {1}'.format(release['tag_name'], asset['name']))
             response = request(
                 method='GET',
                 url='https://api.github.com/repos/{0}/releases/assets/{1}'.format(repo_name, asset['id']),
