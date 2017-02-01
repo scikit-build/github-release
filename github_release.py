@@ -7,6 +7,7 @@ import os
 import sys
 import tempfile
 
+from functools import wraps
 from pprint import pprint
 
 import requests
@@ -172,9 +173,33 @@ RELEASE_COMMANDS = {
     'debug': gh_release_debug           # gh-release j0057/iplbapi debug 1.4.3
 }
 
+def handle_http_error(func):
+    @wraps(func)
+    def with_error_handling(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except requests.exceptions.HTTPError as e:
+            print('Error sending {0} to {1}'.format(e.request.method, e.request.url))
+            print('<', e.request.method, e.request.path_url)
+            for k in sorted(e.request.headers.keys()):
+                print('<', k, ':', e.request.headers[k])
+            if e.request.body:
+                print('<')
+                print('<', repr(e.request.body[:35]), '(total {0} bytes of data)'.format(len(e.request.body)))
+            print('')
+            print('>', e.response.status_code, e.response.reason)
+            for k in sorted(e.response.headers.keys()):
+                print('>', k.title(), ':', e.response.headers[k])
+            if e.response.content:
+                print('>')
+                print('>', repr(e.response.content[:35]), '(total {0} bytes of data)'.format(len(e.response.content)))
+            return 1
+    return with_error_handling
+
+@handle_http_error
 def gh_release():
     args = sys.argv[1:]
-    return handle_http_error(lambda: RELEASE_COMMANDS[args.pop(1)](*args))
+    return RELEASE_COMMANDS[args.pop(1)](*args)
 
 ASSET_COMMANDS = {
     'upload': gh_asset_upload,          # gh-asset j0057/iplbapi upload 1.4.4 bla-bla_1.4.4.whl
@@ -185,28 +210,9 @@ ASSET_COMMANDS = {
     'erase': gh_asset_erase,            # gh-asset j0057/iplbapi erase 1.4.4 bla-bla_1.4.4.whl
 }
 
+@handle_http_error
 def gh_asset():
     args = vars(gh_asset_parser().parse_args())
-    return handle_http_error(lambda: ASSET_COMMANDS[args.pop(1)](*args))
+    return ASSET_COMMANDS[args.pop(1)](*args)
 
-def handle_http_error(func):
-    try:
-        func()
-        return 0
-    except requests.exceptions.HTTPError as e:
-        print 'Error sending {0} to {1}'.format(e.request.method, e.request.url)
-        print '<', e.request.method, e.request.path_url
-        for k in sorted(e.request.headers.keys()):
-            print '<', k, ':', e.request.headers[k]
-        if e.request.body:
-            print '<'
-            print '<', repr(e.request.body[:35]), '(total {0} bytes of data)'.format(len(e.request.body))
-        print
-        print '>', e.response.status_code, e.response.reason
-        for k in sorted(e.response.headers.keys()):
-            print '>', k.title(), ':', e.response.headers[k]
-        if e.response.content:
-            print '>'
-            print '>', repr(e.response.content[:35]), '(total {0} bytes of data)'.format(len(e.response.content))
-        return 1
 
