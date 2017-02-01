@@ -1,5 +1,6 @@
 #!/usr/bin/env python2.7
 
+import argparse
 import fnmatch
 import glob
 import json
@@ -77,9 +78,21 @@ def gh_release_list(repo_name):
     response.raise_for_status()
     map(print_release_info, sorted(response.json(), key=lambda r: r['tag_name']))
 
+
+gh_release_list.description = {
+  "help": "List releases",
+  "params": ["repo_name"]
+}
+
 def gh_release_info(repo_name, tag_name):
     release = get_release_info(repo_name, tag_name)
     print_release_info(release)
+
+
+gh_release_info.description = {
+  "help": "Get release description",
+  "params": ["repo_name", "tag_name"]
+}
 
 def gh_release_create(repo_name, tag_name):
     data = json.dumps({'tag_name': tag_name, 'draft': True})
@@ -89,16 +102,42 @@ def gh_release_create(repo_name, tag_name):
     response.raise_for_status()
     print_release_info(response.json())
 
+
+gh_release_create.description = {
+  "help": "Create a release",
+  "params": ["repo_name", "tag_name"]
+}
+
 def gh_release_delete(repo_name, tag_name):
     release = get_release_info(repo_name, tag_name)
     response = request('DELETE', 'https://api.github.com/repos/{0}/releases/{1}'.format(repo_name, release['id']))
     response.raise_for_status()
 
+
+gh_release_delete.description = {
+  "help": "Delete a release",
+  "params": ["repo_name", "tag_name"]
+}
+
+
 def gh_release_publish(repo_name, tag_name):
     patch_release(repo_name, tag_name, draft=False)
 
+
+gh_release_publish.description = {
+  "help": "Publish a release setting draft to 'False'",
+  "params": ["repo_name", "tag_name"]
+}
+
 def gh_release_unpublish(repo_name, tag_name):
     patch_release(repo_name, tag_name, draft=True)
+
+
+gh_release_unpublish.description = {
+  "help": "Unpublish a release setting draft to 'True'",
+  "params": ["repo_name", "tag_name"]
+}
+
 
 def gh_release_notes(repo_name, tag_name):
     release = get_release_info(repo_name, tag_name)
@@ -117,9 +156,22 @@ def gh_release_notes(repo_name, tag_name):
     finally:
         os.remove(filename)
 
+
+gh_release_notes.description = {
+  "help": "Set release notes",
+  "params": ["repo_name", "tag_name"]
+}
+
+
 def gh_release_debug(repo_name, tag_name):
     release = get_release_info(repo_name, tag_name)
     pprint(release)
+
+
+gh_release_debug.description = {
+  "help": "Print release detailed information",
+  "params": ["repo_name", "tag_name"]
+}
 
 def gh_asset_upload(repo_name, tag_name, pattern):
     release = get_release_info(repo_name, tag_name)
@@ -132,6 +184,12 @@ def gh_asset_upload(repo_name, tag_name, pattern):
             response = request('POST', url, headers={'Content-Type':'application/octet-stream'}, data=f.read())
             response.raise_for_status()
 
+
+gh_asset_upload.description = {
+  "help": "Upload release assets",
+  "params": ["repo_name", "tag_name", "pattern"]
+}
+
 def gh_asset_erase(repo_name, tag_name, pattern):
     release = get_release_info(repo_name, tag_name)
     for asset in release['assets']:
@@ -141,6 +199,12 @@ def gh_asset_erase(repo_name, tag_name, pattern):
         response = request('DELETE',
             'https://api.github.com/repos/{0}/releases/assets/{1}'.format(repo_name, asset['id']))
         response.raise_for_status()
+
+
+gh_asset_erase.description = {
+  "help": "Delete release assets",
+  "params": ["repo_name", "tag_name", "pattern"]
+}
 
 def gh_asset_download(repo_name, tag_name=None, pattern=None):
     releases = get_releases(repo_name)
@@ -162,6 +226,14 @@ def gh_asset_download(repo_name, tag_name=None, pattern=None):
                 response = request('GET', response.headers['Location'], allow_redirects=False)
             with open(asset['name'], 'w+b') as f:
                 f.write(response.content)
+
+
+gh_asset_download.description = {
+  "help": "Download release assets",
+  "params": ["repo_name", "tag_name", "pattern"],
+  "optional_params": ["tag_name", "pattern"]
+}
+
 RELEASE_COMMANDS = {
     'list': gh_release_list,            # gh-release j0057/iplbapi list
     'info': gh_release_info,            # gh-release j0057/iplbapi info 1.4.3
@@ -196,10 +268,34 @@ def handle_http_error(func):
             return 1
     return with_error_handling
 
+def _gh_parser(commands):
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("repo_name", type=str)
+    subparsers = parser.add_subparsers(help='sub-command help')
+
+    for command in commands:
+        func = commands[command]
+        cmd_help = func.description["help"]
+        cmd_params = list(func.description["params"])
+        cmd_opt_params = func.description.get("optional_params", [])
+        cmd_parser = subparsers.add_parser(command, help=cmd_help)
+        for cmd_param in cmd_params:
+            if cmd_param == "repo_name":  # This parameter is already specified above
+                continue
+            if cmd_param not in cmd_opt_params:
+                cmd_parser.add_argument(cmd_param, type=str)
+            else:
+                cmd_parser.add_argument("--%s" % cmd_param, type=str)
+        cmd_parser.set_defaults(func=func)
+
+    return parser
+
 @handle_http_error
 def gh_release():
-    args = sys.argv[1:]
-    return RELEASE_COMMANDS[args.pop(1)](*args)
+    args = _gh_parser(RELEASE_COMMANDS).parse_args()
+    func = args.func
+    return func(*[vars(args).get(arg_name, None) for arg_name in func.description["params"]])
+
 
 ASSET_COMMANDS = {
     'upload': gh_asset_upload,          # gh-asset j0057/iplbapi upload 1.4.4 bla-bla_1.4.4.whl
@@ -212,7 +308,6 @@ ASSET_COMMANDS = {
 
 @handle_http_error
 def gh_asset():
-    args = vars(gh_asset_parser().parse_args())
-    return ASSET_COMMANDS[args.pop(1)](*args)
-
-
+    args = _gh_parser(ASSET_COMMANDS).parse_args()
+    func = args.func
+    return func(*[vars(args).get(arg_name, None) for arg_name in func.description["params"]])
