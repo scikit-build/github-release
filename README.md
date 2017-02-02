@@ -27,7 +27,7 @@ machine api.github.com
 login [TOKEN]
 password x-oauth-basic
 
-machine upload.github.com
+machine uploads.github.com
 login [TOKEN]
 password x-oauth-basic
 ```
