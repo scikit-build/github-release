@@ -7,6 +7,7 @@ import json
 import os
 import tempfile
 
+
 from functools import wraps
 from pprint import pprint
 
@@ -39,8 +40,14 @@ def print_release_info(release):
         print_asset_info(i, asset)
 
 
+def _request(*args, **kwargs):
+    if "GITHUB_TOKEN" in os.environ:
+        kwargs["auth"] = (os.environ["GITHUB_TOKEN"], 'x-oauth-basic')
+    return request(*args, **kwargs)
+
+
 def get_releases(repo_name):
-    response = request('GET', 'https://api.github.com/repos/{0}/releases'.format(repo_name))
+    response = _request('GET', 'https://api.github.com/repos/{0}/releases'.format(repo_name))
     response.raise_for_status()
     return response.json()
 
@@ -65,7 +72,7 @@ def patch_release(repo_name, tag_name, **values):
         "prerelease": release["prerelease"]
     }
     data.update(values)
-    response = request('PATCH', 'https://api.github.com/repos/{0}/releases/{1}'.format(
+    response = _request('PATCH', 'https://api.github.com/repos/{0}/releases/{1}'.format(
           repo_name, release['id']),
           data=json.dumps(data),
           headers={'Content-Type': 'application/json'})
@@ -82,7 +89,7 @@ def get_asset_info(repo_name, tag_name, filename):
 
 
 def gh_release_list(repo_name):
-    response = request('GET', 'https://api.github.com/repos/{0}/releases'.format(repo_name))
+    response = _request('GET', 'https://api.github.com/repos/{0}/releases'.format(repo_name))
     response.raise_for_status()
     map(print_release_info, sorted(response.json(), key=lambda r: r['tag_name']))
 
@@ -106,7 +113,7 @@ gh_release_info.description = {
 
 def gh_release_create(repo_name, tag_name):
     data = {'tag_name': tag_name, 'draft': True}
-    response = request(
+    response = _request(
           'POST', 'https://api.github.com/repos/{0}/releases'.format(repo_name),
           data=json.dumps(data),
           headers={'Content-Type': 'application/json'})
@@ -122,7 +129,7 @@ gh_release_create.description = {
 
 def gh_release_delete(repo_name, tag_name):
     release = get_release_info(repo_name, tag_name)
-    response = request('DELETE', 'https://api.github.com/repos/{0}/releases/{1}'.format(repo_name, release['id']))
+    response = _request('DELETE', 'https://api.github.com/repos/{0}/releases/{1}'.format(repo_name, release['id']))
     response.raise_for_status()
 
 
@@ -196,7 +203,7 @@ def gh_asset_upload(repo_name, tag_name, pattern):
             basename = os.path.basename(filename)
             url = 'https://uploads.github.com/repos/{0}/releases/{1}/assets?name={2}'.format(repo_name, release['id'], basename)
             print('url:', url)
-            response = request('POST', url, headers={'Content-Type': 'application/octet-stream'}, data=f.read())
+            response = _request('POST', url, headers={'Content-Type': 'application/octet-stream'}, data=f.read())
             response.raise_for_status()
 
 
@@ -212,7 +219,7 @@ def gh_asset_erase(repo_name, tag_name, pattern):
         if not fnmatch.fnmatch(asset['name'], pattern):
             continue
         print('release {0}: deleting {1}'.format(tag_name, asset['name']))
-        response = request(
+        response = _request(
               'DELETE',
               'https://api.github.com/repos/{0}/releases/assets/{1}'.format(repo_name, asset['id']))
         response.raise_for_status()
@@ -235,13 +242,13 @@ def gh_asset_download(repo_name, tag_name=None, pattern=None):
             if os.path.exists(asset['name']):
                 continue
             print('release {0}: downloading {1}'.format(release['tag_name'], asset['name']))
-            response = request(
+            response = _request(
                 method='GET',
                 url='https://api.github.com/repos/{0}/releases/assets/{1}'.format(repo_name, asset['id']),
                 allow_redirects=False,
                 headers={'Accept': 'application/octet-stream'})
             while response.status_code == 302:
-                response = request('GET', response.headers['Location'], allow_redirects=False)
+                response = _request('GET', response.headers['Location'], allow_redirects=False)
             with open(asset['name'], 'w+b') as f:
                 f.write(response.content)
 

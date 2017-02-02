@@ -18,9 +18,24 @@ Done!
 
 ## configuring
 
-Generate a new token in [application settings][1]. It should have the repo scope.
+First, [generate a new token](https://help.github.com/articles/creating-an-access-token-for-command-line-use). It should have
+the repo scope.
 
-Put the key in ~/.netrc, which should have mode 0600 (`-rw-------`):
+Then, there are two options:
+
+* Set the `GITHUB_TOKEN` environment variable:
+
+```bash
+export GITHUB_TOKEN=...
+/path/to/command
+
+# or 
+
+GITHUB_TOKEN=... /path/to/command
+```
+
+
+* Put the key in `~/.netrc`, which should have mode 0600 (`-rw-------`):
 
 ```
 machine api.github.com
@@ -31,10 +46,6 @@ machine uploads.github.com
 login [TOKEN]
 password x-oauth-basic
 ```
-
-Done!
-
-[1]: https://github.com/settings/applications
 
 ## installed scripts
 
