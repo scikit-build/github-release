@@ -209,6 +209,7 @@ gh_release_debug.description = {
 
 def gh_asset_upload(repo_name, tag_name, pattern):
     release = get_release_info(repo_name, tag_name)
+    uploaded = False
     for filename in glob.glob(pattern):
         print('release {0}: uploading {1}'.format(tag_name, filename))
         with open(filename, 'rb') as f:
@@ -217,6 +218,9 @@ def gh_asset_upload(repo_name, tag_name, pattern):
             print('url:', url)
             response = _request('POST', url, headers={'Content-Type': 'application/octet-stream'}, data=f.read())
             response.raise_for_status()
+            uploaded = True
+    if not uploaded:
+        print("release {0}: skipping upload: there are no files matching '{1}'".format(tag_name, pattern))
 
 
 gh_asset_upload.description = {
