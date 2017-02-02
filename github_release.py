@@ -272,7 +272,7 @@ def gh_asset_download(repo_name, tag_name=None, pattern=None):
 gh_asset_download.description = {
   "help": "Download release assets",
   "params": ["repo_name", "tag_name", "pattern"],
-  "optional_params": ["tag_name", "pattern"]
+  "optional_params": {"tag_name": str, "pattern": str}
 }
 
 
@@ -321,15 +321,16 @@ def _gh_parser(commands, prog=None):
         func = commands[command]
         cmd_help = func.description["help"]
         cmd_params = list(func.description["params"])
-        cmd_opt_params = func.description.get("optional_params", [])
+        cmd_opt_params = func.description.get("optional_params", {})
         cmd_parser = subparsers.add_parser(command, help=cmd_help)
         for cmd_param in cmd_params:
-            if cmd_param == "repo_name":  # This parameter is already specified above
+            if cmd_param == "repo_name":  # parameter already specified above
                 continue
-            if cmd_param not in cmd_opt_params:
+            if cmd_param not in cmd_opt_params.keys():
                 cmd_parser.add_argument(cmd_param, type=str)
             else:
-                cmd_parser.add_argument("--%s" % cmd_param, type=str)
+                cmd_parser.add_argument(
+                    "--%s" % cmd_param, type=cmd_opt_params[cmd_param])
         cmd_parser.set_defaults(func=func)
 
     return parser
