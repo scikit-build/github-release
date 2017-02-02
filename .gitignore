@@ -1,6 +1,10 @@
+# Python
 env
 build
 dist
 *.egg-info
 *.pyc
+
+# IDE junk
+.idea/*
 *.swp
