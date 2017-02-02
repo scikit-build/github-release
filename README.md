@@ -38,7 +38,7 @@ Done!
 
 ## installed scripts
 
-The package installs two scripts, github-release and github-asset
+The package installs two scripts, `github-release` and `github-asset`
 
 ### github-release
 
@@ -94,5 +94,3 @@ $ github-asset octocat/example-project download 1.4
 $ # download all files from example-project
 # github-asset octocat/example-project download
 ```
-
-
