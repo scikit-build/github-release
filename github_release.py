@@ -120,11 +120,11 @@ gh_release_info.description = {
 }
 
 
-def gh_release_create(repo_name, tag_name):
+def gh_release_create(repo_name, tag_name, publish=False):
     if get_release(repo_name, tag_name) is not None:
         print('release %s: already exists' % tag_name)
         return
-    data = {'tag_name': tag_name, 'draft': True}
+    data = {'tag_name': tag_name, 'draft': not publish}
     response = _request(
           'POST', 'https://api.github.com/repos/{0}/releases'.format(repo_name),
           data=json.dumps(data),
@@ -135,7 +135,8 @@ def gh_release_create(repo_name, tag_name):
 
 gh_release_create.description = {
   "help": "Create a release",
-  "params": ["repo_name", "tag_name"]
+  "params": ["repo_name", "tag_name", "publish"],
+  "optional_params": {"publish": bool}
 }
 
 
@@ -329,8 +330,12 @@ def _gh_parser(commands, prog=None):
             if cmd_param not in cmd_opt_params.keys():
                 cmd_parser.add_argument(cmd_param, type=str)
             else:
-                cmd_parser.add_argument(
-                    "--%s" % cmd_param, type=cmd_opt_params[cmd_param])
+                if cmd_opt_params[cmd_param] is bool:
+                    cmd_parser.add_argument(
+                        "--%s" % cmd_param, action='store_true')
+                else:
+                    cmd_parser.add_argument(
+                        "--%s" % cmd_param, type=cmd_opt_params[cmd_param])
         cmd_parser.set_defaults(func=func)
 
     return parser
