@@ -5,6 +5,7 @@ import fnmatch
 import glob
 import json
 import os
+import sys
 import tempfile
 
 
@@ -296,8 +297,8 @@ def handle_http_error(func):
     return with_error_handling
 
 
-def _gh_parser(commands):
-    parser = argparse.ArgumentParser(description=__doc__)
+def _gh_parser(commands, prog=None):
+    parser = argparse.ArgumentParser(description=__doc__, prog=prog)
     parser.add_argument("repo_name", type=str)
     subparsers = parser.add_subparsers(help='sub-command help')
 
@@ -320,8 +321,8 @@ def _gh_parser(commands):
 
 
 @handle_http_error
-def gh_release():
-    args = _gh_parser(RELEASE_COMMANDS).parse_args()
+def gh_release(argv=None, prog=None):
+    args = _gh_parser(RELEASE_COMMANDS, prog).parse_args(argv)
     func = args.func
     return func(*[vars(args).get(arg_name, None) for arg_name in func.description["params"]])
 
@@ -337,7 +338,36 @@ ASSET_COMMANDS = {
 
 
 @handle_http_error
-def gh_asset():
-    args = _gh_parser(ASSET_COMMANDS).parse_args()
+def gh_asset(argv=None, prog=None):
+    args = _gh_parser(ASSET_COMMANDS, prog).parse_args(argv)
     func = args.func
     return func(*[vars(args).get(arg_name, None) for arg_name in func.description["params"]])
+
+
+def main():
+    prog = os.path.basename(sys.argv[0])
+    parser = argparse.ArgumentParser(
+        description=__doc__,
+        usage="""%s [-h] {release, asset} ...
+
+positional arguments:
+    {release, asset}
+                        sub-command help
+    release             Manage releases (list, create, delete, ...)
+    asset               Manage release assets (upload, download, ...)
+
+optional arguments:
+  -h, --help            show this help message and exit
+""" % prog)
+    parser.add_argument('command', help='Subcommand to run')
+    args = parser.parse_args(sys.argv[1:2])
+    if "gh_%s" % args.command not in globals():
+        print("Unrecognized command")
+        parser.print_help()
+        exit(1)
+    globals()["gh_%s" % args.command](
+        sys.argv[2:], "%s %s" % (prog, args.command))
+
+
+if __name__ == '__main__':
+    main()
