@@ -53,12 +53,20 @@ def get_releases(repo_name):
     return response.json()
 
 
-def get_release_info(repo_name, tag_name):
+def get_release(repo_name, tag_name):
     releases = get_releases(repo_name)
     try:
         release = next(r for r in releases if r['tag_name'] == tag_name)
         return release
     except StopIteration:
+        return None
+
+
+def get_release_info(repo_name, tag_name):
+    release = get_release(repo_name, tag_name)
+    if release is not None:
+        return release
+    else:
         raise Exception('Release with tag_name {0} not found'.format(tag_name))
 
 
@@ -113,6 +121,9 @@ gh_release_info.description = {
 
 
 def gh_release_create(repo_name, tag_name):
+    if get_release(repo_name, tag_name) is not None:
+        print('release %s: already exists' % tag_name)
+        return
     data = {'tag_name': tag_name, 'draft': True}
     response = _request(
           'POST', 'https://api.github.com/repos/{0}/releases'.format(repo_name),
