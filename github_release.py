@@ -62,6 +62,10 @@ def _request(*args, **kwargs):
     return request(*args, **kwargs)
 
 
+#
+# Releases
+#
+
 def get_releases(repo_name):
     response = _request('GET', 'https://api.github.com/repos/{0}/releases'.format(repo_name))
     response.raise_for_status()
@@ -264,6 +268,10 @@ gh_release_debug.description = {
 }
 
 
+#
+# Assets
+#
+
 def gh_asset_upload(repo_name, tag_name, pattern, dry_run=False):
     release = get_release_info(repo_name, tag_name)
     uploaded = False
@@ -343,6 +351,10 @@ gh_asset_download.description = {
   "optional_params": {"tag_name": str, "pattern": str}
 }
 
+
+#
+# References
+#
 
 def get_refs(repo_name, tags=False, pattern=None):
     response = _request(
@@ -427,18 +439,9 @@ gh_ref_delete.description = {
 }
 
 
-RELEASE_COMMANDS = {
-    'list': gh_release_list,            # gh-release j0057/iplbapi list
-    'info': gh_release_info,            # gh-release j0057/iplbapi info 1.4.3
-    'create': gh_release_create,        # gh-release j0057/iplbapi create 1.4.4
-    'edit': gh_release_edit,            # gh-release j0057/iplbapi edit 1.4.4 --name "Release 1.4.4"
-    'delete': gh_release_delete,        # gh-release j0057/iplbapi delete 1.4.4
-    'publish': gh_release_publish,      # gh-release j0057/iplbapi publish 1.4.4
-    'unpublish': gh_release_unpublish,  # gh-release j0057/iplbapi unpublish 1.4.4
-    'release-notes': gh_release_notes,  # gh-release j0057/iplbapi release-notes 1.4.3
-    'debug': gh_release_debug           # gh-release j0057/iplbapi debug 1.4.3
-}
-
+#
+# Decorators
+#
 
 def handle_http_error(func):
     @wraps(func)
@@ -463,6 +466,10 @@ def handle_http_error(func):
             return 1
     return with_error_handling
 
+
+#
+# Command line parsing helpers
+#
 
 def _gh_parser(commands, prog=None):
     parser = argparse.ArgumentParser(description=__doc__, prog=prog)
@@ -503,6 +510,23 @@ def _gh_parse_arguments(commands, argv, prog):
         vars(args).get(arg_name.replace("-", "_"), None)
         for arg_name in func.description["params"]
         ])
+
+
+#
+# Command line parsers
+#
+
+RELEASE_COMMANDS = {
+    'list': gh_release_list,            # gh-release j0057/iplbapi list
+    'info': gh_release_info,            # gh-release j0057/iplbapi info 1.4.3
+    'create': gh_release_create,        # gh-release j0057/iplbapi create 1.4.4
+    'edit': gh_release_edit,            # gh-release j0057/iplbapi edit 1.4.4 --name "Release 1.4.4"
+    'delete': gh_release_delete,        # gh-release j0057/iplbapi delete 1.4.4
+    'publish': gh_release_publish,      # gh-release j0057/iplbapi publish 1.4.4
+    'unpublish': gh_release_unpublish,  # gh-release j0057/iplbapi unpublish 1.4.4
+    'release-notes': gh_release_notes,  # gh-release j0057/iplbapi release-notes 1.4.3
+    'debug': gh_release_debug           # gh-release j0057/iplbapi debug 1.4.3
+}
 
 
 @handle_http_error
@@ -562,6 +586,10 @@ optional arguments:
     globals()["gh_%s" % args.command](
         sys.argv[2:], "%s %s" % (prog, args.command))
 
+
+#
+# Script entry point
+#
 
 if __name__ == '__main__':
     main()
