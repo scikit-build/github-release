@@ -157,23 +157,26 @@ gh_release_delete.description = {
 }
 
 
-def gh_release_publish(repo_name, tag_name):
-    patch_release(repo_name, tag_name, draft=False)
+def gh_release_publish(repo_name, tag_name, prerelease=False):
+    patch_release(repo_name, tag_name, draft=False, prerelease=prerelease)
 
 
 gh_release_publish.description = {
   "help": "Publish a release setting draft to 'False'",
-  "params": ["repo_name", "tag_name"]
+  "params": ["repo_name", "tag_name", "prerelease"],
+  "optional_params": {"prerelease": bool}
 }
 
 
-def gh_release_unpublish(repo_name, tag_name):
-    patch_release(repo_name, tag_name, draft=True)
+def gh_release_unpublish(repo_name, tag_name, prerelease=False):
+    draft = not prerelease
+    patch_release(repo_name, tag_name, draft=draft, prerelease=prerelease)
 
 
 gh_release_unpublish.description = {
   "help": "Unpublish a release setting draft to 'True'",
-  "params": ["repo_name", "tag_name"]
+  "params": ["repo_name", "tag_name", "prerelease"],
+  "optional_params": {"prerelease": bool}
 }
 
 
