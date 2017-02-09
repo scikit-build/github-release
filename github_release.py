@@ -366,7 +366,10 @@ ASSET_COMMANDS = {
 def gh_asset(argv=None, prog=None):
     args = _gh_parser(ASSET_COMMANDS, prog).parse_args(argv)
     func = args.func
-    return func(*[vars(args).get(arg_name, None) for arg_name in func.description["params"]])
+    return func(*[
+        vars(args).get(arg_name.replace("-", "_"), None)
+        for arg_name in func.description["params"]
+        ])
 
 
 def main():
