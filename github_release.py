@@ -496,11 +496,18 @@ def _gh_parser(commands, prog=None):
     return parser
 
 
+def _gh_parse_arguments(commands, argv, prog):
+    args = _gh_parser(commands, prog).parse_args(argv)
+    func = args.func
+    return func(*[
+        vars(args).get(arg_name.replace("-", "_"), None)
+        for arg_name in func.description["params"]
+        ])
+
+
 @handle_http_error
 def gh_release(argv=None, prog=None):
-    args = _gh_parser(RELEASE_COMMANDS, prog).parse_args(argv)
-    func = args.func
-    return func(*[vars(args).get(arg_name, None) for arg_name in func.description["params"]])
+    return _gh_parse_arguments(RELEASE_COMMANDS, argv, prog)
 
 
 ASSET_COMMANDS = {
@@ -515,12 +522,7 @@ ASSET_COMMANDS = {
 
 @handle_http_error
 def gh_asset(argv=None, prog=None):
-    args = _gh_parser(ASSET_COMMANDS, prog).parse_args(argv)
-    func = args.func
-    return func(*[
-        vars(args).get(arg_name.replace("-", "_"), None)
-        for arg_name in func.description["params"]
-        ])
+    return _gh_parse_arguments(ASSET_COMMANDS, argv, prog)
 
 
 REF_COMMANDS = {
@@ -532,12 +534,7 @@ REF_COMMANDS = {
 
 @handle_http_error
 def gh_ref(argv=None, prog=None):
-    args = _gh_parser(REF_COMMANDS, prog).parse_args(argv)
-    func = args.func
-    return func(*[
-        vars(args).get(arg_name.replace("-", "_"), None)
-        for arg_name in func.description["params"]
-        ])
+    return _gh_parse_arguments(REF_COMMANDS, argv, prog)
 
 
 def main():
