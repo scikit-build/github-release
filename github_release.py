@@ -71,8 +71,8 @@ def get_release_info(repo_name, tag_name):
         raise Exception('Release with tag_name {0} not found'.format(tag_name))
 
 
-def patch_release(repo_name, tag_name, **values):
-    release = get_release_info(repo_name, tag_name)
+def patch_release(repo_name, current_tag_name, **values):
+    release = get_release_info(repo_name, current_tag_name)
     data = {
         "tag_name": release["tag_name"],
         "target_commitish": release["target_commitish"],
@@ -144,6 +144,25 @@ gh_release_create.description = {
   "help": "Create a release",
   "params": ["repo_name", "tag_name", "publish", "prerelease", "target_commitish"],
   "optional_params": {"publish": bool, "prerelease": bool, "target_commitish": str}
+}
+
+
+def gh_release_edit(repo_name, current_tag_name,
+                    tag_name=None, target_commitish=None, name=None,
+                    body=None,
+                    draft=None, prerelease=None):
+    attributes = {}
+    for key in ["tag_name", "target_commitish", "name", "body", "draft", "prerelease"]:
+        if locals().get(key, None) is not None:
+            attributes[key] = locals()[key]
+    patch_release(repo_name, current_tag_name, **attributes)
+
+
+gh_release_edit.description = {
+  "help": "Edit a release",
+  "params": ["repo_name", "current_tag_name", "tag_name", "target_commitish", "name", "body", "draft", "prerelease"],
+  "optional_params": {"tag_name": str, "target_commitish": str, "name": str, "body": str, "draft": bool, "prerelease": bool},
+  "optional_params_defaults": {"draft": None, "prerelease": None}
 }
 
 
@@ -302,6 +321,7 @@ RELEASE_COMMANDS = {
     'list': gh_release_list,            # gh-release j0057/iplbapi list
     'info': gh_release_info,            # gh-release j0057/iplbapi info 1.4.3
     'create': gh_release_create,        # gh-release j0057/iplbapi create 1.4.4
+    'edit': gh_release_edit,            # gh-release j0057/iplbapi edit 1.4.4 --name "Release 1.4.4"
     'delete': gh_release_delete,        # gh-release j0057/iplbapi delete 1.4.4
     'publish': gh_release_publish,      # gh-release j0057/iplbapi publish 1.4.4
     'unpublish': gh_release_unpublish,  # gh-release j0057/iplbapi unpublish 1.4.4
