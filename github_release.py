@@ -309,7 +309,7 @@ def gh_asset_erase(repo_name, tag_name, pattern,
 
 
 gh_asset_erase.description = {
-  "help": "Delete release assets",
+  "help": "Delete selected release assets",
   "params": ["repo_name", "tag_name", "pattern", "keep-pattern", "dry-run"],
   "optional_params": {"keep-pattern": str, "dry-run": bool}
 }
