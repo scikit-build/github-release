@@ -212,11 +212,14 @@ gh_release_debug.description = {
 }
 
 
-def gh_asset_upload(repo_name, tag_name, pattern):
+def gh_asset_upload(repo_name, tag_name, pattern, dry_run=False):
     release = get_release_info(repo_name, tag_name)
     uploaded = False
     for filename in glob.glob(pattern):
         print('release {0}: uploading {1}'.format(tag_name, filename))
+        if dry_run:
+            uploaded = True
+            continue
         with open(filename, 'rb') as f:
             basename = os.path.basename(filename)
             url = 'https://uploads.github.com/repos/{0}/releases/{1}/assets?name={2}'.format(repo_name, release['id'], basename)
@@ -230,16 +233,20 @@ def gh_asset_upload(repo_name, tag_name, pattern):
 
 gh_asset_upload.description = {
   "help": "Upload release assets",
-  "params": ["repo_name", "tag_name", "pattern"]
+  "params": ["repo_name", "tag_name", "pattern", "dry-run"],
+  "optional_params": {"dry-run": bool}
 }
 
 
-def gh_asset_erase(repo_name, tag_name, pattern):
+def gh_asset_erase(repo_name, tag_name, pattern,
+                   dry_run=False):
     release = get_release_info(repo_name, tag_name)
     for asset in release['assets']:
         if not fnmatch.fnmatch(asset['name'], pattern):
             continue
         print('release {0}: deleting {1}'.format(tag_name, asset['name']))
+        if dry_run:
+            continue
         response = _request(
               'DELETE',
               'https://api.github.com/repos/{0}/releases/assets/{1}'.format(repo_name, asset['id']))
@@ -248,7 +255,8 @@ def gh_asset_erase(repo_name, tag_name, pattern):
 
 gh_asset_erase.description = {
   "help": "Delete release assets",
-  "params": ["repo_name", "tag_name", "pattern"]
+  "params": ["repo_name", "tag_name", "pattern", "dry-run"],
+  "optional_params": {"dry-run": bool}
 }
 
 
