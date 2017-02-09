@@ -33,6 +33,7 @@ def print_release_info(release):
     print('URL           : {html_url}'.format(**release))
     print('Author        : {login}'.format(**release['author']))
     print('Is published  : {0}'.format(not release['draft']))
+    print('Is prerelease : {0}'.format(release['prerelease']))
     if release['body']:
         print('Release notes :')
         print(release['body'])
