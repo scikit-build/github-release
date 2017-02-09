@@ -1,5 +1,7 @@
 #!/usr/bin/env python2.7
 
+from __future__ import print_function
+
 import argparse
 import fnmatch
 import glob
@@ -40,6 +42,18 @@ def print_release_info(release):
     print
     for (i, asset) in enumerate(release['assets']):
         print_asset_info(i, asset)
+
+
+def print_object_info(ref_object):
+    print('Object:')
+    print('  type        : {type}'.format(**ref_object))
+    print('  sha         : {sha}'.format(**ref_object))
+
+
+def print_ref_info(ref):
+    print('-' * 80)
+    print('Reference     : {ref}'.format(**ref))
+    print_object_info(ref['object'])
 
 
 def _request(*args, **kwargs):
@@ -317,6 +331,89 @@ gh_asset_download.description = {
 }
 
 
+def get_refs(repo_name, tags=False, pattern=None):
+    response = _request(
+          'GET', 'https://api.github.com/repos/{0}/git/refs'.format(repo_name))
+    response.raise_for_status()
+
+    # If "tags" is True, keep only "refs/tags/*"
+    data = response.json()
+    if tags:
+        data = []
+        for ref in response.json():
+            if ref['ref'].startswith("refs/tags"):
+                data.append(ref)
+
+    # If "pattern" is not None, select only matching references
+    filtered_data = data
+    if pattern is not None:
+        filtered_data = []
+        for ref in data:
+            if fnmatch.fnmatch(ref['ref'], pattern):
+                filtered_data.append(ref)
+
+    return filtered_data
+
+
+def gh_ref_list(repo_name, tags=False,  pattern=None, verbose=False):
+    refs = get_refs(repo_name, tags=tags, pattern=pattern)
+    if verbose:
+        map(print_ref_info, sorted(refs, key=lambda r: r['ref']))
+    else:
+        map(lambda ref: print(ref['ref']), sorted(refs, key=lambda r: r['ref']))
+
+
+gh_ref_list.description = {
+  "help": "List all references",
+  "params": ["repo_name", "tags", "pattern", "verbose"],
+  "optional_params": {"tags": bool, "pattern": str, "verbose": bool}
+}
+
+
+def gh_ref_create(repo_name, reference, sha):
+    data = {
+        'ref': "refs/%s" % reference,
+        'sha': sha
+    }
+    response = _request(
+          'POST', 'https://api.github.com/repos/{0}/git/refs'.format(repo_name),
+          data=json.dumps(data),
+          headers={'Content-Type': 'application/json'})
+    response.raise_for_status()
+    print_ref_info(response.json())
+
+
+gh_ref_create.description = {
+  "help": "Create reference (e.g heads/foo, tags/foo)",
+  "params": ["repo_name", "reference", "sha"]
+}
+
+
+def gh_ref_delete(repo_name, pattern, keep_pattern=None, tags=False, dry_run=False, verbose=False):
+    refs = get_refs(repo_name, tags=tags)
+    for ref in refs:
+        if not fnmatch.fnmatch(ref['ref'], pattern):
+            if verbose:
+                print('skipping reference {0}: do not match {1}'.format(ref['ref'], pattern))
+            continue
+        if keep_pattern is not None:
+            if fnmatch.fnmatch(ref['ref'], keep_pattern):
+                continue
+        print('deleting reference {0}'.format(ref['ref']))
+        if dry_run:
+            continue
+        response = _request(
+              'DELETE', 'https://api.github.com/repos/{0}/git/{1}'.format(repo_name, ref['ref']))
+        response.raise_for_status()
+
+
+gh_ref_delete.description = {
+  "help": "Delete selected references",
+  "params": ["repo_name", "pattern", "keep_pattern", "tags", "dry-run", "verbose"],
+  "optional_params": {"keep_pattern": str, "tags": bool, "dry-run": bool, "verbose": bool}
+}
+
+
 RELEASE_COMMANDS = {
     'list': gh_release_list,            # gh-release j0057/iplbapi list
     'info': gh_release_info,            # gh-release j0057/iplbapi info 1.4.3
@@ -413,17 +510,35 @@ def gh_asset(argv=None, prog=None):
         ])
 
 
+REF_COMMANDS = {
+    'list': gh_ref_list,
+    'create': gh_ref_create,
+    'delete': gh_ref_delete
+}
+
+
+@handle_http_error
+def gh_ref(argv=None, prog=None):
+    args = _gh_parser(REF_COMMANDS, prog).parse_args(argv)
+    func = args.func
+    return func(*[
+        vars(args).get(arg_name.replace("-", "_"), None)
+        for arg_name in func.description["params"]
+        ])
+
+
 def main():
     prog = os.path.basename(sys.argv[0])
     parser = argparse.ArgumentParser(
         description=__doc__,
-        usage="""%s [-h] {release, asset} ...
+        usage="""%s [-h] {release, asset, ref} ...
 
 positional arguments:
-    {release, asset}
+    {release, asset, ref}
                         sub-command help
     release             Manage releases (list, create, delete, ...)
     asset               Manage release assets (upload, download, ...)
+    ref                 Manage references (list, create, delete, ...)
 
 optional arguments:
   -h, --help            show this help message and exit
