@@ -121,7 +121,7 @@ gh_release_info.description = {
 }
 
 
-def gh_release_create(repo_name, tag_name, publish=False, prerelease=False):
+def gh_release_create(repo_name, tag_name, publish=False, prerelease=False, target_commitish=None):
     if get_release(repo_name, tag_name) is not None:
         print('release %s: already exists' % tag_name)
         return
@@ -130,6 +130,8 @@ def gh_release_create(repo_name, tag_name, publish=False, prerelease=False):
         'draft': not publish and not prerelease,
         'prerelease': prerelease
     }
+    if target_commitish is not None:
+        data["target_commitish"] = target_commitish
     response = _request(
           'POST', 'https://api.github.com/repos/{0}/releases'.format(repo_name),
           data=json.dumps(data),
@@ -140,8 +142,8 @@ def gh_release_create(repo_name, tag_name, publish=False, prerelease=False):
 
 gh_release_create.description = {
   "help": "Create a release",
-  "params": ["repo_name", "tag_name", "publish", "prerelease"],
-  "optional_params": {"publish": bool, "prerelease": bool}
+  "params": ["repo_name", "tag_name", "publish", "prerelease", "target_commitish"],
+  "optional_params": {"publish": bool, "prerelease": bool, "target_commitish": str}
 }
 
 
