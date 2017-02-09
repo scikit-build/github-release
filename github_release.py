@@ -359,6 +359,10 @@ def _gh_parser(commands, prog=None):
                         "--%s" % cmd_param, type=cmd_opt_params[cmd_param])
         cmd_parser.set_defaults(func=func)
 
+        # Set defaults
+        params_defaults = func.description.get("optional_params_defaults", {})
+        cmd_parser.set_defaults(**params_defaults)
+
     return parser
 
 
