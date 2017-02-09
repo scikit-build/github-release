@@ -239,11 +239,14 @@ gh_asset_upload.description = {
 
 
 def gh_asset_erase(repo_name, tag_name, pattern,
-                   dry_run=False):
+                   keep_pattern=None, dry_run=False):
     release = get_release_info(repo_name, tag_name)
     for asset in release['assets']:
         if not fnmatch.fnmatch(asset['name'], pattern):
             continue
+        if keep_pattern is not None:
+            if fnmatch.fnmatch(asset['name'], keep_pattern):
+                continue
         print('release {0}: deleting {1}'.format(tag_name, asset['name']))
         if dry_run:
             continue
@@ -255,8 +258,8 @@ def gh_asset_erase(repo_name, tag_name, pattern,
 
 gh_asset_erase.description = {
   "help": "Delete release assets",
-  "params": ["repo_name", "tag_name", "pattern", "dry-run"],
-  "optional_params": {"dry-run": bool}
+  "params": ["repo_name", "tag_name", "pattern", "keep-pattern", "dry-run"],
+  "optional_params": {"keep-pattern": str, "dry-run": bool}
 }
 
 
