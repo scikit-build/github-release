@@ -21,13 +21,15 @@ from requests import request
 GITHUB_API = "https://api.github.com"
 
 
-def print_asset_info(i, asset):
-    print('  Asset #{i} name     : {name}'.format(i=i, **asset))
-    print('  Asset #{i} size     : {size}'.format(i=i, **asset))
-    print('  Asset #{i} uploader : {login}'.format(i=i, **asset['uploader']))
-    print('  Asset #{i} URL      : {browser_download_url}'.format(i=i, **asset))
-    print('')
+def _request(*args, **kwargs):
+    if "GITHUB_TOKEN" in os.environ:
+        kwargs["auth"] = (os.environ["GITHUB_TOKEN"], 'x-oauth-basic')
+    return request(*args, **kwargs)
 
+
+#
+# Releases
+#
 
 def print_release_info(release):
     print('Tag name      : {tag_name}'.format(**release))
@@ -42,32 +44,10 @@ def print_release_info(release):
     if release['body']:
         print('Release notes :')
         print(release['body'])
-    print
+    print('')
     for (i, asset) in enumerate(release['assets']):
         print_asset_info(i, asset)
 
-
-def print_object_info(ref_object):
-    print('Object:')
-    print('  type        : {type}'.format(**ref_object))
-    print('  sha         : {sha}'.format(**ref_object))
-
-
-def print_ref_info(ref):
-    print('-' * 80)
-    print('Reference     : {ref}'.format(**ref))
-    print_object_info(ref['object'])
-
-
-def _request(*args, **kwargs):
-    if "GITHUB_TOKEN" in os.environ:
-        kwargs["auth"] = (os.environ["GITHUB_TOKEN"], 'x-oauth-basic')
-    return request(*args, **kwargs)
-
-
-#
-# Releases
-#
 
 def get_releases(repo_name):
     response = _request('GET', GITHUB_API + '/repos/{0}/releases'.format(repo_name))
@@ -337,6 +317,14 @@ gh_release_debug.description = {
 # Assets
 #
 
+def print_asset_info(i, asset):
+    print('  Asset #{i} name     : {name}'.format(i=i, **asset))
+    print('  Asset #{i} size     : {size}'.format(i=i, **asset))
+    print('  Asset #{i} uploader : {login}'.format(i=i, **asset['uploader']))
+    print('  Asset #{i} URL      : {browser_download_url}'.format(i=i, **asset))
+    print('')
+
+
 def gh_asset_upload(repo_name, tag_name, pattern, dry_run=False):
     release = get_release_info(repo_name, tag_name)
     uploaded = False
@@ -423,6 +411,18 @@ gh_asset_download.description = {
 #
 # References
 #
+
+def print_object_info(ref_object):
+    print('Object:')
+    print('  type        : {type}'.format(**ref_object))
+    print('  sha         : {sha}'.format(**ref_object))
+
+
+def print_ref_info(ref):
+    print('-' * 80)
+    print('Reference     : {ref}'.format(**ref))
+    print_object_info(ref['object'])
+
 
 def get_refs(repo_name, tags=False, pattern=None):
     response = _request(
