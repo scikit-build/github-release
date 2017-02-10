@@ -19,6 +19,7 @@ setuptools.setup(
     install_requires=requirements,
     entry_points={
         'console_scripts': [
+            'githubrelease = github_release:main',
             'github-release = github_release:gh_release',
             'github-asset = github_release:gh_asset'
         ]})
