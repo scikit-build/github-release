@@ -99,7 +99,16 @@ def patch_release(repo_name, current_tag_name, **values):
         "draft": release["draft"],
         "prerelease": release["prerelease"]
     }
+
+    updated = []
+    for key in data:
+        if key in values and data[key] != values[key]:
+            updated.append("%s: '%s' -> '%s'" % (key, data[key], values[key]))
+    if updated:
+        print("updating release [%s]: \n  %s" % (current_tag_name, "\n  ".join(updated)))
+
     data.update(values)
+
     response = _request('PATCH', 'https://api.github.com/repos/{0}/releases/{1}'.format(
           repo_name, release['id']),
           data=json.dumps(data),
