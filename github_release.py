@@ -50,7 +50,8 @@ def print_release_info(release):
 
 
 def get_releases(repo_name):
-    response = _request('GET', GITHUB_API + '/repos/{0}/releases'.format(repo_name))
+    response = _request(
+        'GET', GITHUB_API + '/repos/{0}/releases'.format(repo_name))
     response.raise_for_status()
     return response.json()
 
@@ -135,15 +136,18 @@ def patch_release(repo_name, current_tag_name, **values):
         if key in values and data[key] != values[key]:
             updated.append("%s: '%s' -> '%s'" % (key, data[key], values[key]))
     if updated:
-        print("updating release [%s]: \n  %s" % (current_tag_name, "\n  ".join(updated)))
+        print("updating release [%s]: \n  %s" % (
+            current_tag_name, "\n  ".join(updated)))
 
     data.update(values)
 
     if not dry_run:
-        response = _request('PATCH', GITHUB_API + '/repos/{0}/releases/{1}'.format(
-              repo_name, release['id']),
-              data=json.dumps(data),
-              headers={'Content-Type': 'application/json'})
+        url = GITHUB_API + '/repos/{0}/releases/{1}'.format(
+            repo_name, release['id'])
+        response = _request(
+            'PATCH', url,
+            data=json.dumps(data),
+            headers={'Content-Type': 'application/json'})
         response.raise_for_status()
 
     if current_tag_name != data["tag_name"]:
@@ -158,13 +162,16 @@ def get_asset_info(repo_name, tag_name, filename):
         asset = next(a for a in release['assets'] if a['name'] == filename)
         return asset
     except StopIteration:
-        raise Exception('Asset with filename {0} not found in release with tag_name {1}'.format(filename, tag_name))
+        raise Exception('Asset with filename {0} not found in '
+                        'release with tag_name {1}'.format(filename, tag_name))
 
 
 def gh_release_list(repo_name):
-    response = _request('GET', GITHUB_API + '/repos/{0}/releases'.format(repo_name))
+    url = GITHUB_API + '/repos/{0}/releases'.format(repo_name)
+    response = _request('GET', url)
     response.raise_for_status()
-    map(print_release_info, sorted(response.json(), key=lambda r: r['tag_name']))
+    map(print_release_info,
+        sorted(response.json(), key=lambda r: r['tag_name']))
 
 
 gh_release_list.description = {
@@ -184,7 +191,8 @@ gh_release_info.description = {
 }
 
 
-def gh_release_create(repo_name, tag_name, publish=False, prerelease=False, target_commitish=None):
+def gh_release_create(repo_name, tag_name,
+                      publish=False, prerelease=False, target_commitish=None):
     if get_release(repo_name, tag_name) is not None:
         print('release %s: already exists' % tag_name)
         return
@@ -205,8 +213,13 @@ def gh_release_create(repo_name, tag_name, publish=False, prerelease=False, targ
 
 gh_release_create.description = {
   "help": "Create a release",
-  "params": ["repo_name", "tag_name", "publish", "prerelease", "target_commitish"],
-  "optional_params": {"publish": bool, "prerelease": bool, "target_commitish": str}
+  "params": [
+      "repo_name", "tag_name",
+      "publish", "prerelease", "target_commitish"
+  ],
+  "optional_params": {
+      "publish": bool, "prerelease": bool, "target_commitish": str
+  }
 }
 
 
@@ -215,7 +228,10 @@ def gh_release_edit(repo_name, current_tag_name,
                     body=None,
                     draft=None, prerelease=None, dry_run=False, verbose=False):
     attributes = {}
-    for key in ["tag_name", "target_commitish", "name", "body", "draft", "prerelease", "dry_run", "verbose"]:
+    for key in [
+        "tag_name", "target_commitish", "name", "body", "draft",
+        "prerelease", "dry_run", "verbose"
+    ]:
         if locals().get(key, None) is not None:
             attributes[key] = locals()[key]
     patch_release(repo_name, current_tag_name, **attributes)
@@ -223,13 +239,22 @@ def gh_release_edit(repo_name, current_tag_name,
 
 gh_release_edit.description = {
   "help": "Edit a release",
-  "params": ["repo_name", "current_tag_name", "tag_name", "target_commitish", "name", "body", "draft", "prerelease", "dry-run", "verbose"],
-  "optional_params": {"tag_name": str, "target_commitish": str, "name": str, "body": str, "draft": bool, "prerelease": bool, "dry-run": bool, "verbose": bool},
+  "params": [
+      "repo_name", "current_tag_name",
+      "tag_name", "target_commitish", "name", "body", "draft", "prerelease",
+      "dry-run", "verbose"
+  ],
+  "optional_params": {
+      "tag_name": str, "target_commitish": str,
+      "name": str, "body": str, "draft": bool, "prerelease": bool,
+      "dry-run": bool, "verbose": bool
+  },
   "optional_params_defaults": {"draft": None, "prerelease": None}
 }
 
 
-def gh_release_delete(repo_name, pattern, keep_pattern=None, dry_run=False, verbose=False):
+def gh_release_delete(repo_name, pattern, keep_pattern=None,
+                      dry_run=False, verbose=False):
     releases = get_releases(repo_name)
     for release in releases:
         if not fnmatch.fnmatch(release['tag_name'], pattern):
@@ -243,7 +268,9 @@ def gh_release_delete(repo_name, pattern, keep_pattern=None, dry_run=False, verb
         print('deleting release {0}'.format(release['tag_name']))
         if dry_run:
             continue
-        response = _request('DELETE', GITHUB_API + '/repos/{0}/releases/{1}'.format(repo_name, release['id']))
+        url = (GITHUB_API
+               + '/repos/{0}/releases/{1}'.format(repo_name, release['id']))
+        response = _request('DELETE', url)
         response.raise_for_status()
 
 
@@ -286,7 +313,8 @@ def gh_release_notes(repo_name, tag_name):
                 f.write(release['body'])
         ret = os.system('{0} {1}'.format(os.environ['EDITOR'], filename))
         if ret:
-            raise Exception('{0} returned exit code {1}'.format(os.environ['EDITOR'], ret))
+            raise Exception(
+                '{0} returned exit code {1}'.format(os.environ['EDITOR'], ret))
         with open(filename, 'rb') as f:
             body = f.read()
         if release['body'] == body:
@@ -340,11 +368,15 @@ def gh_asset_upload(repo_name, tag_name, pattern, dry_run=False):
             basename = os.path.basename(filename)
             url = '{0}?name={1}'.format(upload_url, basename)
             print('url:', url)
-            response = _request('POST', url, headers={'Content-Type': 'application/octet-stream'}, data=f.read())
+            response = _request(
+                'POST', url,
+                headers={'Content-Type': 'application/octet-stream'},
+                data=f.read())
             response.raise_for_status()
             uploaded = True
     if not uploaded:
-        print("release {0}: skipping upload: there are no files matching '{1}'".format(tag_name, pattern))
+        print("release {0}: skipping upload: "
+              "there are no files matching '{1}'".format(tag_name, pattern))
 
 
 gh_asset_upload.description = {
@@ -366,9 +398,12 @@ def gh_asset_erase(repo_name, tag_name, pattern,
         print('release {0}: deleting {1}'.format(tag_name, asset['name']))
         if dry_run:
             continue
-        response = _request(
-              'DELETE',
-              GITHUB_API + '/repos/{0}/releases/assets/{1}'.format(repo_name, asset['id']))
+        url = (
+            GITHUB_API
+            + '/repos/{0}/releases/assets/{1}'.format(repo_name, asset['id'])
+        )
+        response = _request('DELETE', url)
+
         response.raise_for_status()
 
 
@@ -389,14 +424,17 @@ def gh_asset_download(repo_name, tag_name=None, pattern=None):
                 continue
             if os.path.exists(asset['name']):
                 continue
-            print('release {0}: downloading {1}'.format(release['tag_name'], asset['name']))
+            print('release {0}: '
+                  'downloading {1}'.format(release['tag_name'], asset['name']))
             response = _request(
                 method='GET',
-                url=GITHUB_API + '/repos/{0}/releases/assets/{1}'.format(repo_name, asset['id']),
+                url=GITHUB_API + '/repos/{0}/releases/assets/{1}'.format(
+                    repo_name, asset['id']),
                 allow_redirects=False,
                 headers={'Accept': 'application/octet-stream'})
             while response.status_code == 302:
-                response = _request('GET', response.headers['Location'], allow_redirects=False)
+                response = _request(
+                    'GET', response.headers['Location'], allow_redirects=False)
             with open(asset['name'], 'w+b') as f:
                 f.write(response.content)
 
@@ -482,12 +520,14 @@ gh_ref_create.description = {
 }
 
 
-def gh_ref_delete(repo_name, pattern, keep_pattern=None, tags=False, dry_run=False, verbose=False):
+def gh_ref_delete(repo_name, pattern, keep_pattern=None, tags=False,
+                  dry_run=False, verbose=False):
     refs = get_refs(repo_name, tags=tags)
     for ref in refs:
         if not fnmatch.fnmatch(ref['ref'], pattern):
             if verbose:
-                print('skipping reference {0}: do not match {1}'.format(ref['ref'], pattern))
+                print('skipping reference {0}: '
+                      'do not match {1}'.format(ref['ref'], pattern))
             continue
         if keep_pattern is not None:
             if fnmatch.fnmatch(ref['ref'], keep_pattern):
@@ -496,14 +536,17 @@ def gh_ref_delete(repo_name, pattern, keep_pattern=None, tags=False, dry_run=Fal
         if dry_run:
             continue
         response = _request(
-              'DELETE', GITHUB_API + '/repos/{0}/git/{1}'.format(repo_name, ref['ref']))
+            'DELETE',
+            GITHUB_API + '/repos/{0}/git/{1}'.format(repo_name, ref['ref']))
         response.raise_for_status()
 
 
 gh_ref_delete.description = {
   "help": "Delete selected references",
-  "params": ["repo_name", "pattern", "keep_pattern", "tags", "dry-run", "verbose"],
-  "optional_params": {"keep_pattern": str, "tags": bool, "dry-run": bool, "verbose": bool}
+  "params": ["repo_name", "pattern", "keep_pattern", "tags",
+             "dry-run", "verbose"],
+  "optional_params": {"keep_pattern": str, "tags": bool,
+                      "dry-run": bool, "verbose": bool}
 }
 
 
@@ -517,20 +560,24 @@ def handle_http_error(func):
         try:
             return func(*args, **kwargs)
         except requests.exceptions.HTTPError as e:
-            print('Error sending {0} to {1}'.format(e.request.method, e.request.url))
+            print('Error sending {0} to {1}'.format(
+                e.request.method, e.request.url))
             print('<', e.request.method, e.request.path_url)
             for k in sorted(e.request.headers.keys()):
                 print('<', k, ':', e.request.headers[k])
             if e.request.body:
                 print('<')
-                print('<', repr(e.request.body[:35]), '(total {0} bytes of data)'.format(len(e.request.body)))
+                print('<', repr(e.request.body[:35]),
+                      '(total {0} bytes of data)'.format(len(e.request.body)))
             print('')
             print('>', e.response.status_code, e.response.reason)
             for k in sorted(e.response.headers.keys()):
                 print('>', k.title(), ':', e.response.headers[k])
             if e.response.content:
                 print('>')
-                print('>', repr(e.response.content[:35]), '(total {0} bytes of data)'.format(len(e.response.content)))
+                print('>', repr(e.response.content[:35]),
+                      '(total {0} bytes of data)'.format(
+                          len(e.response.content)))
             return 1
     return with_error_handling
 
@@ -585,16 +632,30 @@ def _gh_parse_arguments(commands, argv, prog):
 #
 
 RELEASE_COMMANDS = {
-    'list': gh_release_list,            # gh-release j0057/iplbapi list
-    'info': gh_release_info,            # gh-release j0057/iplbapi info 1.4.3
-    'create': gh_release_create,        # gh-release j0057/iplbapi create 1.4.4
-    'edit': gh_release_edit,            # gh-release j0057/iplbapi edit 1.4.4 --name "Release 1.4.4"
-    'delete': gh_release_delete,        # gh-release j0057/iplbapi delete 1.4.4
-    'publish': gh_release_publish,      # gh-release j0057/iplbapi publish 1.4.4
-    'unpublish': gh_release_unpublish,  # gh-release j0057/iplbapi unpublish 1.4.4
-    'release-notes': gh_release_notes,  # gh-release j0057/iplbapi release-notes 1.4.3
-    'debug': gh_release_debug           # gh-release j0057/iplbapi debug 1.4.3
+    'list': gh_release_list,
+    'info': gh_release_info,
+    'create': gh_release_create,
+    'edit': gh_release_edit,
+    'delete': gh_release_delete,
+    'publish': gh_release_publish,
+    'unpublish': gh_release_unpublish,
+    'release-notes': gh_release_notes,
+    'debug': gh_release_debug
 }
+"""
+Examples::
+
+    gh-release j0057/iplbapi list
+    gh-release j0057/iplbapi info 1.4.3
+    gh-release j0057/iplbapi create 1.4.4
+    gh-release j0057/iplbapi edit 1.4.4 --name "Release 1.4.4"
+    gh-release j0057/iplbapi delete 1.4.4
+    gh-release j0057/iplbapi publish 1.4.4
+    gh-release j0057/iplbapi unpublish 1.4.4
+    gh-release j0057/iplbapi release-notes 1.4.3
+    gh-release j0057/iplbapi debug 1.4.3
+
+"""
 
 
 @handle_http_error
@@ -603,13 +664,22 @@ def gh_release(argv=None, prog=None):
 
 
 ASSET_COMMANDS = {
-    'upload': gh_asset_upload,          # gh-asset j0057/iplbapi upload 1.4.4 bla-bla_1.4.4.whl
-                                        # gh-asset j0057/iplbapi download
-                                        # gh-asset j0057/iplbapi download 1.4.4
-    'download': gh_asset_download,      # gh-asset j0057/iplbapi download 1.4.4 bla-bla_1.4.4.whl
-    'delete': gh_asset_erase,           # gh-asset j0057/iplbapi erase 1.4.4 bla-bla_1.4.4.whl
-    'erase': gh_asset_erase,            # gh-asset j0057/iplbapi erase 1.4.4 bla-bla_1.4.4.whl
+    'upload': gh_asset_upload,
+    'download': gh_asset_download,
+    'delete': gh_asset_erase,
+    'erase': gh_asset_erase,
 }
+"""
+Examples::
+
+    gh-asset j0057/iplbapi upload 1.4.4 bla-bla_1.4.4.whl
+    gh-asset j0057/iplbapi download
+    gh-asset j0057/iplbapi download 1.4.4
+    gh-asset j0057/iplbapi download 1.4.4 bla-bla_1.4.4.whl
+    gh-asset j0057/iplbapi erase 1.4.4 bla-bla_1.4.4.whl
+    gh-asset j0057/iplbapi erase 1.4.4 bla-bla_1.4.4.whl
+
+"""
 
 
 @handle_http_error
