@@ -381,6 +381,8 @@ def gh_asset_upload(repo_name, tag_name, pattern, dry_run=False):
                 headers={'Content-Type': 'application/octet-stream'},
                 data=f.read())
             response.raise_for_status()
+            asset = response.json()
+            print('browser_download_url:', asset["browser_download_url"])
             uploaded = True
     if not uploaded:
         print("release {0}: skipping upload: "
