@@ -344,10 +344,11 @@ gh_release_debug.description = {
 #
 
 def print_asset_info(i, asset):
-    print('  Asset #{i} name     : {name}'.format(i=i, **asset))
-    print('  Asset #{i} size     : {size}'.format(i=i, **asset))
-    print('  Asset #{i} uploader : {login}'.format(i=i, **asset['uploader']))
-    print('  Asset #{i} URL      : {browser_download_url}'.format(i=i, **asset))
+    print('  Asset #{i} name      : {name}'.format(i=i, **asset))
+    print('  Asset #{i} size      : {size}'.format(i=i, **asset))
+    print('  Asset #{i} uploader  : {login}'.format(i=i, **asset['uploader']))
+    print('  Asset #{i} URL       : {browser_download_url}'.format(i=i, **asset))
+    print('  Asset #{i} Downloads : {download_count}'.format(i=i, **asset))
     print('')
 
 
