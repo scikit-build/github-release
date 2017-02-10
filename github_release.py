@@ -89,8 +89,51 @@ def get_release_info(repo_name, tag_name):
         raise Exception('Release with tag_name {0} not found'.format(tag_name))
 
 
+def _update_release_sha(repo_name, tag_name, new_release_sha):
+    """Update the commit associated with a given release tag.
+
+    Since updating a tag commit is not directly possible, this function
+    does the following steps:
+    * set the release tag to ``<tag_name>-tmp`` and associate it
+      with ``new_release_sha``.
+    * delete tag ``refs/tags/<tag_name>``.
+    * update the release tag to ``<tag_name>`` and associate it
+      with ``new_release_sha``.
+    """
+    if new_release_sha is None:
+        return
+    refs = get_refs(repo_name, tags=True, pattern="refs/tags/%s" % tag_name)
+    if not refs:
+        return
+    assert len(refs) == 1
+    previous_release_sha = refs[0]["object"]["sha"]
+    if previous_release_sha == new_release_sha:
+        return
+    tmp_tag_name = tag_name + "-tmp"
+    patch_release(repo_name, tag_name,
+                  tag_name=tmp_tag_name,
+                  target_commitish=new_release_sha,
+                  update_release_sha=False)
+    gh_ref_delete(repo_name, "refs/tags/%s" % tag_name)
+    patch_release(repo_name, tmp_tag_name,
+                  tag_name=tag_name,
+                  target_commitish=new_release_sha,
+                  update_release_sha=False)
+    gh_ref_delete(repo_name,
+                  "refs/tags/%s" % tmp_tag_name)
+
+
 def patch_release(repo_name, current_tag_name, **values):
+    verbose = values.get("verbose", False)
     release = get_release_info(repo_name, current_tag_name)
+
+    if values.get("update_release_sha", True):
+        _update_release_sha(
+            repo_name,
+            values.get("tag_name", release["tag_name"]),
+            values.get("target_commitish", release["target_commitish"])
+        )
+
     data = {
         "tag_name": release["tag_name"],
         "target_commitish": release["target_commitish"],
@@ -114,6 +157,11 @@ def patch_release(repo_name, current_tag_name, **values):
           data=json.dumps(data),
           headers={'Content-Type': 'application/json'})
     response.raise_for_status()
+
+    if current_tag_name != data["tag_name"]:
+        gh_ref_delete(
+            repo_name, "refs/tags/%s" % current_tag_name,
+            tags=True, verbose=verbose)
 
 
 def get_asset_info(repo_name, tag_name, filename):
@@ -177,9 +225,9 @@ gh_release_create.description = {
 def gh_release_edit(repo_name, current_tag_name,
                     tag_name=None, target_commitish=None, name=None,
                     body=None,
-                    draft=None, prerelease=None):
+                    draft=None, prerelease=None, verbose=False):
     attributes = {}
-    for key in ["tag_name", "target_commitish", "name", "body", "draft", "prerelease"]:
+    for key in ["tag_name", "target_commitish", "name", "body", "draft", "prerelease", "verbose"]:
         if locals().get(key, None) is not None:
             attributes[key] = locals()[key]
     patch_release(repo_name, current_tag_name, **attributes)
@@ -187,8 +235,8 @@ def gh_release_edit(repo_name, current_tag_name,
 
 gh_release_edit.description = {
   "help": "Edit a release",
-  "params": ["repo_name", "current_tag_name", "tag_name", "target_commitish", "name", "body", "draft", "prerelease"],
-  "optional_params": {"tag_name": str, "target_commitish": str, "name": str, "body": str, "draft": bool, "prerelease": bool},
+  "params": ["repo_name", "current_tag_name", "tag_name", "target_commitish", "name", "body", "draft", "prerelease", "verbose"],
+  "optional_params": {"tag_name": str, "target_commitish": str, "name": str, "body": str, "draft": bool, "prerelease": bool, "verbose": bool},
   "optional_params_defaults": {"draft": None, "prerelease": None}
 }
 
