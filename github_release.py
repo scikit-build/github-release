@@ -340,6 +340,9 @@ gh_release_debug.description = {
 def gh_asset_upload(repo_name, tag_name, pattern, dry_run=False):
     release = get_release_info(repo_name, tag_name)
     uploaded = False
+    upload_url = release["upload_url"]
+    if "{" in upload_url:
+        upload_url = upload_url[:upload_url.index("{")]
     for filename in glob.glob(pattern):
         print('release {0}: uploading {1}'.format(tag_name, filename))
         if dry_run:
@@ -347,7 +350,7 @@ def gh_asset_upload(repo_name, tag_name, pattern, dry_run=False):
             continue
         with open(filename, 'rb') as f:
             basename = os.path.basename(filename)
-            url = 'https://uploads.github.com/repos/{0}/releases/{1}/assets?name={2}'.format(repo_name, release['id'], basename)
+            url = '{0}?name={1}'.format(upload_url, basename)
             print('url:', url)
             response = _request('POST', url, headers={'Content-Type': 'application/octet-stream'}, data=f.read())
             response.raise_for_status()
