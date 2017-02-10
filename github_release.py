@@ -18,6 +18,9 @@ import requests
 from requests import request
 
 
+GITHUB_API = "https://api.github.com"
+
+
 def print_asset_info(i, asset):
     print('  Asset #{i} name     : {name}'.format(i=i, **asset))
     print('  Asset #{i} size     : {size}'.format(i=i, **asset))
@@ -67,7 +70,7 @@ def _request(*args, **kwargs):
 #
 
 def get_releases(repo_name):
-    response = _request('GET', 'https://api.github.com/repos/{0}/releases'.format(repo_name))
+    response = _request('GET', GITHUB_API + '/repos/{0}/releases'.format(repo_name))
     response.raise_for_status()
     return response.json()
 
@@ -157,7 +160,7 @@ def patch_release(repo_name, current_tag_name, **values):
     data.update(values)
 
     if not dry_run:
-        response = _request('PATCH', 'https://api.github.com/repos/{0}/releases/{1}'.format(
+        response = _request('PATCH', GITHUB_API + '/repos/{0}/releases/{1}'.format(
               repo_name, release['id']),
               data=json.dumps(data),
               headers={'Content-Type': 'application/json'})
@@ -179,7 +182,7 @@ def get_asset_info(repo_name, tag_name, filename):
 
 
 def gh_release_list(repo_name):
-    response = _request('GET', 'https://api.github.com/repos/{0}/releases'.format(repo_name))
+    response = _request('GET', GITHUB_API + '/repos/{0}/releases'.format(repo_name))
     response.raise_for_status()
     map(print_release_info, sorted(response.json(), key=lambda r: r['tag_name']))
 
@@ -213,7 +216,7 @@ def gh_release_create(repo_name, tag_name, publish=False, prerelease=False, targ
     if target_commitish is not None:
         data["target_commitish"] = target_commitish
     response = _request(
-          'POST', 'https://api.github.com/repos/{0}/releases'.format(repo_name),
+          'POST', GITHUB_API + '/repos/{0}/releases'.format(repo_name),
           data=json.dumps(data),
           headers={'Content-Type': 'application/json'})
     response.raise_for_status()
@@ -260,7 +263,7 @@ def gh_release_delete(repo_name, pattern, keep_pattern=None, dry_run=False, verb
         print('deleting release {0}'.format(release['tag_name']))
         if dry_run:
             continue
-        response = _request('DELETE', 'https://api.github.com/repos/{0}/releases/{1}'.format(repo_name, release['id']))
+        response = _request('DELETE', GITHUB_API + '/repos/{0}/releases/{1}'.format(repo_name, release['id']))
         response.raise_for_status()
 
 
@@ -374,7 +377,7 @@ def gh_asset_erase(repo_name, tag_name, pattern,
             continue
         response = _request(
               'DELETE',
-              'https://api.github.com/repos/{0}/releases/assets/{1}'.format(repo_name, asset['id']))
+              GITHUB_API + '/repos/{0}/releases/assets/{1}'.format(repo_name, asset['id']))
         response.raise_for_status()
 
 
@@ -398,7 +401,7 @@ def gh_asset_download(repo_name, tag_name=None, pattern=None):
             print('release {0}: downloading {1}'.format(release['tag_name'], asset['name']))
             response = _request(
                 method='GET',
-                url='https://api.github.com/repos/{0}/releases/assets/{1}'.format(repo_name, asset['id']),
+                url=GITHUB_API + '/repos/{0}/releases/assets/{1}'.format(repo_name, asset['id']),
                 allow_redirects=False,
                 headers={'Accept': 'application/octet-stream'})
             while response.status_code == 302:
@@ -420,7 +423,7 @@ gh_asset_download.description = {
 
 def get_refs(repo_name, tags=False, pattern=None):
     response = _request(
-          'GET', 'https://api.github.com/repos/{0}/git/refs'.format(repo_name))
+          'GET', GITHUB_API + '/repos/{0}/git/refs'.format(repo_name))
     response.raise_for_status()
 
     # If "tags" is True, keep only "refs/tags/*"
@@ -463,7 +466,7 @@ def gh_ref_create(repo_name, reference, sha):
         'sha': sha
     }
     response = _request(
-          'POST', 'https://api.github.com/repos/{0}/git/refs'.format(repo_name),
+          'POST', GITHUB_API + '/repos/{0}/git/refs'.format(repo_name),
           data=json.dumps(data),
           headers={'Content-Type': 'application/json'})
     response.raise_for_status()
@@ -490,7 +493,7 @@ def gh_ref_delete(repo_name, pattern, keep_pattern=None, tags=False, dry_run=Fal
         if dry_run:
             continue
         response = _request(
-              'DELETE', 'https://api.github.com/repos/{0}/git/{1}'.format(repo_name, ref['ref']))
+              'DELETE', GITHUB_API + '/repos/{0}/git/{1}'.format(repo_name, ref['ref']))
         response.raise_for_status()
 
 
