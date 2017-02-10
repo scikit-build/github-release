@@ -97,14 +97,12 @@ def _update_release_sha(repo_name, tag_name, new_release_sha, dry_run):
     patch_release(repo_name, tag_name,
                   tag_name=tmp_tag_name,
                   target_commitish=new_release_sha,
-                  dry_run=dry_run,
-                  update_release_sha=False)
+                  dry_run=dry_run)
     gh_ref_delete(repo_name, "refs/tags/%s" % tag_name, dry_run=dry_run)
     patch_release(repo_name, tmp_tag_name,
                   tag_name=tag_name,
                   target_commitish=new_release_sha,
-                  dry_run=dry_run,
-                  update_release_sha=False)
+                  dry_run=dry_run)
     gh_ref_delete(repo_name,
                   "refs/tags/%s" % tmp_tag_name, dry_run=dry_run)
 
@@ -113,14 +111,14 @@ def patch_release(repo_name, current_tag_name, **values):
     dry_run = values.get("dry_run", False)
     verbose = values.get("verbose", False)
     release = get_release_info(repo_name, current_tag_name)
+    new_tag_name = values.get("tag_name", release["tag_name"])
 
-    if values.get("update_release_sha", True):
-        _update_release_sha(
-            repo_name,
-            values.get("tag_name", release["tag_name"]),
-            values.get("target_commitish", release["target_commitish"]),
-            dry_run
-        )
+    _update_release_sha(
+        repo_name,
+        new_tag_name,
+        values.get("target_commitish", None),
+        dry_run
+    )
 
     data = {
         "tag_name": release["tag_name"],
