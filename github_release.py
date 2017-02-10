@@ -89,7 +89,7 @@ def get_release_info(repo_name, tag_name):
         raise Exception('Release with tag_name {0} not found'.format(tag_name))
 
 
-def _update_release_sha(repo_name, tag_name, new_release_sha):
+def _update_release_sha(repo_name, tag_name, new_release_sha, dry_run):
     """Update the commit associated with a given release tag.
 
     Since updating a tag commit is not directly possible, this function
@@ -113,17 +113,20 @@ def _update_release_sha(repo_name, tag_name, new_release_sha):
     patch_release(repo_name, tag_name,
                   tag_name=tmp_tag_name,
                   target_commitish=new_release_sha,
+                  dry_run=dry_run,
                   update_release_sha=False)
-    gh_ref_delete(repo_name, "refs/tags/%s" % tag_name)
+    gh_ref_delete(repo_name, "refs/tags/%s" % tag_name, dry_run=dry_run)
     patch_release(repo_name, tmp_tag_name,
                   tag_name=tag_name,
                   target_commitish=new_release_sha,
+                  dry_run=dry_run,
                   update_release_sha=False)
     gh_ref_delete(repo_name,
-                  "refs/tags/%s" % tmp_tag_name)
+                  "refs/tags/%s" % tmp_tag_name, dry_run=dry_run)
 
 
 def patch_release(repo_name, current_tag_name, **values):
+    dry_run = values.get("dry_run", False)
     verbose = values.get("verbose", False)
     release = get_release_info(repo_name, current_tag_name)
 
@@ -131,7 +134,8 @@ def patch_release(repo_name, current_tag_name, **values):
         _update_release_sha(
             repo_name,
             values.get("tag_name", release["tag_name"]),
-            values.get("target_commitish", release["target_commitish"])
+            values.get("target_commitish", release["target_commitish"]),
+            dry_run
         )
 
     data = {
@@ -152,16 +156,17 @@ def patch_release(repo_name, current_tag_name, **values):
 
     data.update(values)
 
-    response = _request('PATCH', 'https://api.github.com/repos/{0}/releases/{1}'.format(
-          repo_name, release['id']),
-          data=json.dumps(data),
-          headers={'Content-Type': 'application/json'})
-    response.raise_for_status()
+    if not dry_run:
+        response = _request('PATCH', 'https://api.github.com/repos/{0}/releases/{1}'.format(
+              repo_name, release['id']),
+              data=json.dumps(data),
+              headers={'Content-Type': 'application/json'})
+        response.raise_for_status()
 
     if current_tag_name != data["tag_name"]:
         gh_ref_delete(
             repo_name, "refs/tags/%s" % current_tag_name,
-            tags=True, verbose=verbose)
+            tags=True, verbose=verbose, dry_run=dry_run)
 
 
 def get_asset_info(repo_name, tag_name, filename):
@@ -225,9 +230,9 @@ gh_release_create.description = {
 def gh_release_edit(repo_name, current_tag_name,
                     tag_name=None, target_commitish=None, name=None,
                     body=None,
-                    draft=None, prerelease=None, verbose=False):
+                    draft=None, prerelease=None, dry_run=False, verbose=False):
     attributes = {}
-    for key in ["tag_name", "target_commitish", "name", "body", "draft", "prerelease", "verbose"]:
+    for key in ["tag_name", "target_commitish", "name", "body", "draft", "prerelease", "dry_run", "verbose"]:
         if locals().get(key, None) is not None:
             attributes[key] = locals()[key]
     patch_release(repo_name, current_tag_name, **attributes)
@@ -235,8 +240,8 @@ def gh_release_edit(repo_name, current_tag_name,
 
 gh_release_edit.description = {
   "help": "Edit a release",
-  "params": ["repo_name", "current_tag_name", "tag_name", "target_commitish", "name", "body", "draft", "prerelease", "verbose"],
-  "optional_params": {"tag_name": str, "target_commitish": str, "name": str, "body": str, "draft": bool, "prerelease": bool, "verbose": bool},
+  "params": ["repo_name", "current_tag_name", "tag_name", "target_commitish", "name", "body", "draft", "prerelease", "dry-run", "verbose"],
+  "optional_params": {"tag_name": str, "target_commitish": str, "name": str, "body": str, "draft": bool, "prerelease": bool, "dry-run": bool, "verbose": bool},
   "optional_params_defaults": {"draft": None, "prerelease": None}
 }
 
