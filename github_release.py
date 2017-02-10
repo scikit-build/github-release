@@ -359,7 +359,16 @@ def gh_asset_upload(repo_name, tag_name, pattern, dry_run=False):
     upload_url = release["upload_url"]
     if "{" in upload_url:
         upload_url = upload_url[:upload_url.index("{")]
-    for filename in glob.glob(pattern):
+
+    if type(pattern) is list:
+        filenames = []
+        for package in pattern:
+            filenames.extend(glob.glob(package))
+        set(filenames)
+    else:
+        filenames = glob.glob(pattern)
+
+    for filename in filenames:
         print('release {0}: uploading {1}'.format(tag_name, filename))
         if dry_run:
             uploaded = True
