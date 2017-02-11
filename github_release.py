@@ -352,7 +352,7 @@ def print_asset_info(i, asset):
     print('')
 
 
-def gh_asset_upload(repo_name, tag_name, pattern, dry_run=False):
+def gh_asset_upload(repo_name, tag_name, pattern, dry_run=False, verbose=False):
     release = get_release_info(repo_name, tag_name)
     uploaded = False
     upload_url = release["upload_url"]
@@ -375,12 +375,15 @@ def gh_asset_upload(repo_name, tag_name, pattern, dry_run=False):
         with open(filename, 'rb') as f:
             basename = os.path.basename(filename)
             url = '{0}?name={1}'.format(upload_url, basename)
-            print('url:', url)
+            if verbose:
+                print('url:', url)
             response = _request(
                 'POST', url,
                 headers={'Content-Type': 'application/octet-stream'},
                 data=f.read())
             response.raise_for_status()
+            asset = response.json()
+            print('browser_download_url:', asset["browser_download_url"])
             uploaded = True
     if not uploaded:
         print("release {0}: skipping upload: "
@@ -389,8 +392,8 @@ def gh_asset_upload(repo_name, tag_name, pattern, dry_run=False):
 
 gh_asset_upload.description = {
   "help": "Upload release assets",
-  "params": ["repo_name", "tag_name", "pattern", "dry-run"],
-  "optional_params": {"dry-run": bool}
+  "params": ["repo_name", "tag_name", "pattern", "dry-run", "verbose"],
+  "optional_params": {"dry-run": bool, "verbose": bool}
 }
 
 
