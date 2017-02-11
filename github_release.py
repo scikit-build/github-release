@@ -31,22 +31,26 @@ def _request(*args, **kwargs):
 # Releases
 #
 
-def print_release_info(release):
-    print('Tag name      : {tag_name}'.format(**release))
+def print_release_info(release, title=None, indent=""):
+    if title is None:
+        title = "release '{0}' info".format(release["tag_name"])
+    print(indent + title)
+    indent = "  " + indent
+    print(indent + 'Tag name      : {tag_name}'.format(**release))
     if release['name']:
-        print('Name          : {name}'.format(**release))
-    print('ID            : {id}'.format(**release))
-    print('Created       : {created_at}'.format(**release))
-    print('URL           : {html_url}'.format(**release))
-    print('Author        : {login}'.format(**release['author']))
-    print('Is published  : {0}'.format(not release['draft']))
-    print('Is prerelease : {0}'.format(release['prerelease']))
+        print(indent + 'Name          : {name}'.format(**release))
+    print(indent + 'ID            : {id}'.format(**release))
+    print(indent + 'Created       : {created_at}'.format(**release))
+    print(indent + 'URL           : {html_url}'.format(**release))
+    print(indent + 'Author        : {login}'.format(**release['author']))
+    print(indent + 'Is published  : {0}'.format(not release['draft']))
+    print(indent + 'Is prerelease : {0}'.format(release['prerelease']))
     if release['body']:
-        print('Release notes :')
-        print(release['body'])
+        print(indent + 'Release notes :')
+        print(indent + release['body'])
     print('')
     for (i, asset) in enumerate(release['assets']):
-        print_asset_info(i, asset)
+        print_asset_info(i, asset, indent=indent)
 
 
 def get_releases(repo_name):
@@ -134,8 +138,9 @@ def patch_release(repo_name, current_tag_name, **values):
         if key in values and data[key] != values[key]:
             updated.append("%s: '%s' -> '%s'" % (key, data[key], values[key]))
     if updated:
-        print("updating release [%s]: \n  %s" % (
+        print("updating '%s' release: \n  %s" % (
             current_tag_name, "\n  ".join(updated)))
+        print("")
 
     data.update(values)
 
@@ -206,7 +211,7 @@ def gh_release_create(repo_name, tag_name,
           data=json.dumps(data),
           headers={'Content-Type': 'application/json'})
     response.raise_for_status()
-    print_release_info(response.json())
+    print_release_info(response.json(), title="created '%s' release" % tag_name)
 
 
 gh_release_create.description = {
@@ -343,13 +348,15 @@ gh_release_debug.description = {
 # Assets
 #
 
-def print_asset_info(i, asset):
-    print('  Asset #{i} name      : {name}'.format(i=i, **asset))
-    print('  Asset #{i} size      : {size}'.format(i=i, **asset))
-    print('  Asset #{i} uploader  : {login}'.format(i=i, **asset['uploader']))
-    print('  Asset #{i} URL       : {browser_download_url}'.format(i=i, **asset))
-    print('  Asset #{i} Downloads : {download_count}'.format(i=i, **asset))
-    print('')
+def print_asset_info(i, asset, indent=""):
+    print(indent + "Asset #{i}".format(i=i))
+    indent = "  " + indent
+    print(indent + "name      : {name}".format(i=i, **asset))
+    print(indent + "size      : {size}".format(i=i, **asset))
+    print(indent + "uploader  : {login}".format(i=i, **asset['uploader']))
+    print(indent + "URL       : {browser_download_url}".format(i=i, **asset))
+    print(indent + "Downloads : {download_count}".format(i=i, **asset))
+    print("")
 
 
 def gh_asset_upload(repo_name, tag_name, pattern, dry_run=False, verbose=False):
@@ -367,8 +374,13 @@ def gh_asset_upload(repo_name, tag_name, pattern, dry_run=False, verbose=False):
     else:
         filenames = glob.glob(pattern)
 
+    prefix = "uploading '{0}' release assets: ".format(tag_name)
+    if len(filenames) > 1:
+        print(prefix)
+        prefix = "  "
+
     for filename in filenames:
-        print('release {0}: uploading {1}'.format(tag_name, filename))
+        print(prefix + 'uploading ' + filename)
         if dry_run:
             uploaded = True
             continue
@@ -376,14 +388,15 @@ def gh_asset_upload(repo_name, tag_name, pattern, dry_run=False, verbose=False):
             basename = os.path.basename(filename)
             url = '{0}?name={1}'.format(upload_url, basename)
             if verbose:
-                print('url:', url)
+                print(prefix + 'upload_url: ' + url)
             response = _request(
                 'POST', url,
                 headers={'Content-Type': 'application/octet-stream'},
                 data=f.read())
             response.raise_for_status()
             asset = response.json()
-            print('browser_download_url:', asset["browser_download_url"])
+            print(prefix + 'download_url: ' + asset["browser_download_url"])
+            print("")
             uploaded = True
     if not uploaded:
         print("release {0}: skipping upload: "
@@ -467,16 +480,16 @@ gh_asset_download.description = {
 # References
 #
 
-def print_object_info(ref_object):
-    print('Object:')
-    print('  type        : {type}'.format(**ref_object))
-    print('  sha         : {sha}'.format(**ref_object))
+def print_object_info(ref_object, indent=""):
+    print(indent + 'Object')
+    print(indent + '  type : {type}'.format(**ref_object))
+    print(indent + '  sha  : {sha}'.format(**ref_object))
 
 
-def print_ref_info(ref):
-    print('-' * 80)
-    print('Reference     : {ref}'.format(**ref))
-    print_object_info(ref['object'])
+def print_ref_info(ref, indent=""):
+    print(indent + "Reference '{ref}'".format(**ref))
+    print_object_info(ref['object'], indent="  " + indent)
+    print("")
 
 
 def get_refs(repo_name, tags=False, pattern=None):
