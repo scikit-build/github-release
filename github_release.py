@@ -194,7 +194,7 @@ gh_release_info.description = {
 }
 
 
-def gh_release_create(repo_name, tag_name,
+def gh_release_create(repo_name, tag_name, name=None,
                       publish=False, prerelease=False, target_commitish=None):
     if get_release(repo_name, tag_name) is not None:
         print('release %s: already exists' % tag_name)
@@ -204,6 +204,8 @@ def gh_release_create(repo_name, tag_name,
         'draft': not publish and not prerelease,
         'prerelease': prerelease
     }
+    if name is not None:
+        data["name"] = name
     if target_commitish is not None:
         data["target_commitish"] = target_commitish
     response = _request(
@@ -217,11 +219,11 @@ def gh_release_create(repo_name, tag_name,
 gh_release_create.description = {
   "help": "Create a release",
   "params": [
-      "repo_name", "tag_name",
+      "repo_name", "tag_name", "name",
       "publish", "prerelease", "target_commitish"
   ],
   "optional_params": {
-      "publish": bool, "prerelease": bool, "target_commitish": str
+      "name": str, "publish": bool, "prerelease": bool, "target_commitish": str
   }
 }
 
