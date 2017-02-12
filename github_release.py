@@ -53,11 +53,15 @@ def print_release_info(release, title=None, indent=""):
         print_asset_info(i, asset, indent=indent)
 
 
-def get_releases(repo_name):
+def get_releases(repo_name, verbose=False):
     response = _request(
         'GET', GITHUB_API + '/repos/{0}/releases'.format(repo_name))
     response.raise_for_status()
-    return response.json()
+    releases = response.json()
+    if verbose:
+        map(print_release_info,
+            sorted(response.json(), key=lambda r: r['tag_name']))
+    return releases
 
 
 def get_release(repo_name, tag_name):
@@ -169,12 +173,8 @@ def get_asset_info(repo_name, tag_name, filename):
                         'release with tag_name {1}'.format(filename, tag_name))
 
 
-def gh_release_list(repo_name):
-    url = GITHUB_API + '/repos/{0}/releases'.format(repo_name)
-    response = _request('GET', url)
-    response.raise_for_status()
-    map(print_release_info,
-        sorted(response.json(), key=lambda r: r['tag_name']))
+def gh_release_list(repo_name, verbose=True):
+    return get_releases(repo_name, verbose=verbose)
 
 
 gh_release_list.description = {
