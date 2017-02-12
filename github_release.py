@@ -364,6 +364,7 @@ def print_asset_info(i, asset, indent=""):
 def gh_asset_upload(repo_name, tag_name, pattern, dry_run=False, verbose=False):
     release = get_release_info(repo_name, tag_name)
     uploaded = False
+    already_uploaded = False
     upload_url = release["upload_url"]
     if "{" in upload_url:
         upload_url = upload_url[:upload_url.index("{")]
@@ -376,33 +377,49 @@ def gh_asset_upload(repo_name, tag_name, pattern, dry_run=False, verbose=False):
     else:
         filenames = glob.glob(pattern)
 
-    prefix = "uploading '{0}' release assets: ".format(tag_name)
-    if len(filenames) > 1:
-        print(prefix)
-        prefix = "  "
+    if len(filenames) > 0:
+        print("uploading '%s' release asset(s) "
+              "(found %s):" % (tag_name, len(filenames)))
 
     for filename in filenames:
-        print(prefix + 'uploading ' + filename)
+        print("  uploading %s" % filename)
+        basename = os.path.basename(filename)
+        # Skip if an asset with same name has already been uploaded
+        # Trying to upload would give a HTTP error 422
+        download_url = None
+        for asset in release["assets"]:
+            if asset["name"] == basename:
+                download_url = asset["browser_download_url"]
+                break
+        if download_url:
+            already_uploaded = True
+            print("  skipping (asset with same name already exists)")
+            print("  download_url: %s" % download_url)
+            print("")
+            continue
         if dry_run:
             uploaded = True
+            print("  download_url: Unknown (dry_run)")
+            print("")
             continue
+        # Attempt upload
         with open(filename, 'rb') as f:
-            basename = os.path.basename(filename)
             url = '{0}?name={1}'.format(upload_url, basename)
             if verbose:
-                print(prefix + 'upload_url: ' + url)
+                print("  upload_url: %s" % url)
             response = _request(
                 'POST', url,
                 headers={'Content-Type': 'application/octet-stream'},
                 data=f.read())
             response.raise_for_status()
             asset = response.json()
-            print(prefix + 'download_url: ' + asset["browser_download_url"])
+            print("  download_url: %s" % asset["browser_download_url"])
             print("")
             uploaded = True
-    if not uploaded:
-        print("release {0}: skipping upload: "
-              "there are no files matching '{1}'".format(tag_name, pattern))
+    if not uploaded and not already_uploaded:
+        print("skipping upload of '%s' release assets ("
+              "no files match pattern(s): %s)" % (tag_name, pattern))
+        print("")
 
 
 gh_asset_upload.description = {
