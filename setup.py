@@ -13,8 +13,8 @@ setup_requires = ['setuptools-version-command']
 setup(
     name='githubrelease',
     version_command='git describe',
-    author='Joost Molenaar',
-    author_email='j.j.molenaar@gmail.com',
+    author='Joost Molenaar, Jean-Christophe Fillion-Robin',
+    author_email='j.j.molenaar@gmail.com, jchris.fillionr@kitware.com',
     url='https://github.com/j0057/github-release',
     py_modules=['github_release'],
     install_requires=requirements,
@@ -25,5 +25,9 @@ setup(
             'githubrelease = github_release:main',
             'github-release = github_release:gh_release',
             'github-asset = github_release:gh_asset'
-        ]}
+        ]},
+    classifiers=[
+        'License :: OSI Approved :: Apache Software License',
+    ],
+    license="Apache",
 )
