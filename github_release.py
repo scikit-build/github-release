@@ -197,7 +197,7 @@ gh_release_info.description = {
 def gh_release_create(repo_name, tag_name, name=None,
                       publish=False, prerelease=False, target_commitish=None):
     if get_release(repo_name, tag_name) is not None:
-        print('release %s: already exists' % tag_name)
+        print('release %s: already exists\n' % tag_name)
         return
     data = {
         'tag_name': tag_name,
