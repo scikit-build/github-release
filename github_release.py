@@ -415,16 +415,36 @@ gh_asset_upload.description = {
 def gh_asset_erase(repo_name, tag_name, pattern,
                    keep_pattern=None, dry_run=False, verbose=False):
     release = get_release_info(repo_name, tag_name)
+    # List of assets
+    excluded_assets = {}
+    matched_assets = []
+    matched_assets_to_keep = {}
     for asset in release['assets']:
         if not fnmatch.fnmatch(asset['name'], pattern):
+            skip_reason = "do NOT match pattern '%s'" % pattern
+            excluded_assets[asset['name']] = skip_reason
             continue
+        matched_assets.append(asset)
         if keep_pattern is not None:
             if fnmatch.fnmatch(asset['name'], keep_pattern):
-                if verbose:
-                    print('skipping asset {0}: do not match {1}'.format(
-                        asset['name'], keep_pattern))
+                skip_reason = "match keep_pattern '%s'" % keep_pattern
+                matched_assets_to_keep[asset['name']] = skip_reason
                 continue
-        print('release {0}: deleting {1}'.format(tag_name, asset['name']))
+    # Summary
+    summary = "matched: %s, matched-but-keep: %s, not-matched: %s" % (
+        len(matched_assets),
+        len(matched_assets_to_keep),
+        len(excluded_assets)
+    )
+    print("deleting '%s' release asset(s) (%s):" % (tag_name, summary))
+    # Perform deletion
+    for asset in matched_assets:
+        if asset['name'] in matched_assets_to_keep:
+            if verbose:
+                skip_reason = matched_assets_to_keep[asset['name']]
+                print("  skipping %s (%s)" % (asset['name'], skip_reason))
+            continue
+        print("  deleting %s" % asset['name'])
         if dry_run:
             continue
         url = (
@@ -432,8 +452,14 @@ def gh_asset_erase(repo_name, tag_name, pattern,
             + '/repos/{0}/releases/assets/{1}'.format(repo_name, asset['id'])
         )
         response = _request('DELETE', url)
-
         response.raise_for_status()
+    print("")
+    if verbose:
+        indent = "  "
+        print(indent + "assets NOT matching selection pattern [%s]:" % pattern)
+        for asset_name in excluded_assets:
+            print(indent + "  " + asset_name)
+        print("")
 
 
 gh_asset_erase.description = {
