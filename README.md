@@ -105,3 +105,14 @@ $ github-asset octocat/example-project download 1.4
 $ # download all files from example-project
 # github-asset octocat/example-project download
 ```
+
+## Miscellaneous
+
+Written by Joost Molenaar and Jean-Christophe Fillion-Robin
+
+It is covered by the Apache License, Version 2.0:
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+The license file was added at revision 0393859 on 2017-02-12, but you may
+consider that the license applies to all prior revisions as well.
