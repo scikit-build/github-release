@@ -2,12 +2,8 @@
 
 from setuptools import setup
 
-try:
-    with open('requirements.txt', 'r') as f:
-        requirements = f.read().split()
-except IOError:
-    with open('githubrelease.egg-info/requires.txt', 'r') as f:
-        requirements = f.read().split()
+with open('requirements.txt', 'r') as fp:
+    requirements = list(filter(bool, (line.strip() for line in fp)))
 
 setup_requires = ['setuptools-version-command']
 
