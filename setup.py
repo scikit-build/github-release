@@ -1,17 +1,16 @@
 #!/usr/bin/env python2.7
 
-import setuptools
+from setuptools import setup
 
-try:
-    with open('requirements.txt', 'r') as f:
-        requirements = f.read().split()
-except IOError:
-    with open('githubrelease.egg-info/requires.txt', 'r') as f:
-        requirements = f.read().split()
+with open('requirements.txt', 'r') as fp:
+    requirements = list(filter(bool, (line.strip() for line in fp)))
+
+with open('requirements-dev.txt', 'r') as fp:
+    dev_requirements = list(filter(bool, (line.strip() for line in fp)))
 
 setup_requires = ['setuptools-version-command']
 
-setuptools.setup(
+setup(
     name='githubrelease',
     version_command='git describe',
     author='Joost Molenaar',
@@ -19,10 +18,12 @@ setuptools.setup(
     url='https://github.com/j0057/github-release',
     py_modules=['github_release'],
     install_requires=requirements,
+    tests_require=dev_requirements,
     setup_requires=setup_requires,
     entry_points={
         'console_scripts': [
             'githubrelease = github_release:main',
             'github-release = github_release:gh_release',
             'github-asset = github_release:gh_asset'
-        ]})
+        ]}
+)
