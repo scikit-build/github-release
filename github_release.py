@@ -470,6 +470,8 @@ def gh_asset_erase(repo_name, tag_name, pattern,
         )
         response = _request('DELETE', url)
         response.raise_for_status()
+    if len(matched_assets) == 0:
+        print("  nothing to delete")
     print("")
     if verbose:
         indent = "  "
