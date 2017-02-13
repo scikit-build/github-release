@@ -1,6 +1,6 @@
 #!/usr/bin/env python2.7
 
-import setuptools
+from setuptools import setup
 
 try:
     with open('requirements.txt', 'r') as f:
@@ -11,7 +11,7 @@ except IOError:
 
 setup_requires = ['setuptools-version-command']
 
-setuptools.setup(
+setup(
     name='githubrelease',
     version_command='git describe',
     author='Joost Molenaar',
@@ -25,4 +25,5 @@ setuptools.setup(
             'githubrelease = github_release:main',
             'github-release = github_release:gh_release',
             'github-asset = github_release:gh_asset'
-        ]})
+        ]}
+)
