@@ -5,6 +5,9 @@ from setuptools import setup
 with open('requirements.txt', 'r') as fp:
     requirements = list(filter(bool, (line.strip() for line in fp)))
 
+with open('requirements-dev.txt', 'r') as fp:
+    dev_requirements = list(filter(bool, (line.strip() for line in fp)))
+
 setup_requires = ['setuptools-version-command']
 
 setup(
@@ -15,6 +18,7 @@ setup(
     url='https://github.com/j0057/github-release',
     py_modules=['github_release'],
     install_requires=requirements,
+    tests_require=dev_requirements,
     setup_requires=setup_requires,
     entry_points={
         'console_scripts': [
