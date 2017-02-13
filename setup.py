@@ -9,6 +9,8 @@ except IOError:
     with open('githubrelease.egg-info/requires.txt', 'r') as f:
         requirements = f.read().split()
 
+setup_requires = ['setuptools-version-command']
+
 setuptools.setup(
     name='githubrelease',
     version_command='git describe',
@@ -17,6 +19,7 @@ setuptools.setup(
     url='https://github.com/j0057/github-release',
     py_modules=['github_release'],
     install_requires=requirements,
+    setup_requires=setup_requires,
     entry_points={
         'console_scripts': [
             'githubrelease = github_release:main',
