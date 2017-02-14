@@ -795,8 +795,8 @@ optional arguments:
     parser.add_argument('command', help='Subcommand to run')
     args = parser.parse_args(sys.argv[1:2])
     if "gh_%s" % args.command not in globals():
-        print("Unrecognized command")
         parser.print_help()
+        print("\n%s: error: unrecognized command" % prog)
         exit(1)
     globals()["gh_%s" % args.command](
         sys.argv[2:], "%s %s" % (prog, args.command))
