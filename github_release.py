@@ -665,7 +665,10 @@ def handle_http_error(func):
 
 def _gh_parser(commands, prog=None):
     parser = argparse.ArgumentParser(description=__doc__, prog=prog)
-    parser.add_argument("repo_name", type=str)
+    parser.add_argument(
+        "repo_name", type=str, metavar="REPOSITORY",
+        help="Github repository to update (e.g jcfr/sandbox)"
+    )
     subparsers = parser.add_subparsers(help='sub-command help')
 
     for command in commands:
@@ -776,30 +779,42 @@ def gh_ref(argv=None, prog=None):
     return _gh_parse_arguments(REF_COMMANDS, argv, prog)
 
 
+PROG = os.path.basename(sys.argv[0])
+HELP = """Usage: {prog} COMMAND [OPTIONS]
+       {prog} [-h]
+
+A CLI to easily manage GitHub releases, assets and references.
+
+Options:
+    -h, --help       Show this help message and exit
+
+Commands:
+    release    Manage releases (list, create, delete, ...)
+    asset      Manage release assets (upload, download, ...)
+    ref        Manage references (list, create, delete, ...)
+
+Run '{prog} COMMAND --help' for more information on a command.
+""".format(prog=PROG)
+
+
 def main():
-    prog = os.path.basename(sys.argv[0])
-    parser = argparse.ArgumentParser(
-        description=__doc__,
-        usage="""%s [-h] {release, asset, ref} ...
 
-positional arguments:
-    {release, asset, ref}
-                        sub-command help
-    release             Manage releases (list, create, delete, ...)
-    asset               Manage release assets (upload, download, ...)
-    ref                 Manage references (list, create, delete, ...)
+    if (len(sys.argv) == 1
+            or "--help" in sys.argv[:2]
+            or "-h" in sys.argv[:2]):
+        print(HELP)
+        exit(0)
 
-optional arguments:
-  -h, --help            show this help message and exit
-""" % prog)
-    parser.add_argument('command', help='Subcommand to run')
+    parser = argparse.ArgumentParser()
+    parser.add_argument('command', default=None)
+
     args = parser.parse_args(sys.argv[1:2])
     if "gh_%s" % args.command not in globals():
-        parser.print_help()
-        print("\n%s: error: unrecognized command" % prog)
+        print("%s: '%s' is not a githubrelease command." % (PROG, args.command))
+        print("See '%s --help'" % PROG)
         exit(1)
     globals()["gh_%s" % args.command](
-        sys.argv[2:], "%s %s" % (prog, args.command))
+        sys.argv[2:], "%s %s" % (PROG, args.command))
 
 
 #
