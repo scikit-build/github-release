@@ -1,10 +1,17 @@
 # githubrelease
 
-This is a python script to manage releases on github. I made it because it
-sucks to have to download a file from a server, only to upload it to Github
-from the desktop. It also sucks to download a file from github to your 
-desktop, and then SCP it to a server. This thing works nicely from an SSH 
-session.
+This is a [CLI](https://en.wikipedia.org/wiki/Command-line_interface) to easily
+manage GitHub releases, assets and references.
+
+This quote from the original author says it all:
+
+> I made it because it sucks to have to download a file from a server,
+> only to upload it to Github from the desktop.
+>
+> It also sucks to download a file from github to your desktop, and then
+> SCP it to a server.
+>
+> This thing works nicely from an SSH session.
 
 ## installing 
 
