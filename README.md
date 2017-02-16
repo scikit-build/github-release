@@ -107,7 +107,7 @@ It understands the following commands:
 | unpublish     | tagname [options] | make release draft                |
 | release-notes | tagname           | use $EDITOR to edit release notes |
 
-Optional parameters:
+**Optional parameters:**
 
 * create:
 
@@ -161,7 +161,7 @@ It understands the following commands:
 | delete    | tagname filename [options] | delete a file from a release                              |
 
 
-Optional parameters:
+**Optional parameters:**
 
 * delete:
 
@@ -170,14 +170,15 @@ Optional parameters:
 ```
 
 
-Remarks:
+**Remarks:**
 
 When specifying filenames, shell-like wildcards are supported, but make sure to
 quote using single quotes, i.e. don't let the shell expand the wildcard pattern.
 
 For the `download` command, you also need to specify a tagname of `'*'`
 
-Examples:
+
+**Examples:**
 
 ```
 $ # upload all example-project-1.4* files in /home/me/pkg
