@@ -28,12 +28,7 @@ Then, there are two options:
 ```bash
 export GITHUB_TOKEN=...
 /path/to/command
-
-# or 
-
-GITHUB_TOKEN=... /path/to/command
 ```
-
 
 * Put the key in `~/.netrc`, which should have mode 0600 (`-rw-------`):
 
@@ -47,43 +42,113 @@ login [TOKEN]
 password x-oauth-basic
 ```
 
-## installed scripts
+## installed script
 
-The package installs two scripts, `github-release` and `github-asset`
+The package installs one CLI named ``githubrelease``.
 
-### github-release
+```bash
+$ githubrelease 
+Usage: githubrelease COMMAND [OPTIONS]
+       githubrelease [-h]
 
-This script deals with releases. The general usage is:
+A CLI to easily manage GitHub releases, assets and references.
 
-    github-release username/reponame command [tag]
+Options:
+    -h, --help       Show this help message and exit
+
+Commands:
+    release    Manage releases (list, create, delete, ...)
+    asset      Manage release assets (upload, download, ...)
+    ref        Manage references (list, create, delete, ...)
+
+Run 'githubrelease COMMAND --help' for more information on a command.
+```
+
+<small>*For backward compatibility, it also installs `github-release` and `github-asset`*</small>
+
+### ``release`` command
+
+This command deals with releases. The general usage is:
+
+    githubrelease release username/reponame command [tag] [options]
 
 It understands the following commands:
 
-| command       | parameters    | description                       |
-|---------------|---------------|-----------------------------------|
-| list          |               | list all releases                 |
-| info          | tagname       | list one release                  |
-| create        | tagname       | create a release                  |
-| delete        | tagname       | delete a release                  |
-| publish       | tagname       | make release public               |
-| unpublish     | tagname       | make release draft                |
-| release-notes | tagname       | use $EDITOR to edit release notes |
+| command       | parameters        | description                       |
+|---------------|-------------------|-----------------------------------|
+| list          |                   | list all releases                 |
+| info          | tagname           | list one release                  |
+| create        | tagname [options] | create a release                  |
+| edit          | tagname [options] | Edit a release                    |
+| delete        | tagname           | delete a release                  |
+| publish       | tagname [options] | make release public               |
+| unpublish     | tagname [options] | make release draft                |
+| release-notes | tagname           | use $EDITOR to edit release notes |
 
-### github-asset
+Optional parameters:
 
-This script deals with release assets. The general usage is:
+* create:
 
-    github-asset username/reponame command [tag] [filename]
+```bash
+  --name NAME
+  --publish
+  --prerelease
+  --target_commitish TARGET_COMMITISH
+```
+
+* edit:
+
+```bash
+  --tag_name TAG_NAME
+  --target_commitish TARGET_COMMITISH
+  --name NAME
+  --body BODY
+  --draft
+  --prerelease
+  --dry-run
+  --verbose
+```
+
+* publish:
+
+```bash
+  --prerelease
+```
+
+* unpublish:
+
+```bash
+  --prerelease
+```
+
+
+### ``asset`` command
+
+This command deals with release assets. The general usage is:
+
+    githubrelease asset username/reponame command [tag] [filename] [options]
 
 It understands the following commands:
 
-| command   | parameters        | description                                               |
-|-----------|-------------------|-----------------------------------------------------------|
-| upload    | tagname filename  | upload a file to a release                                |
-| download  |                   | download all files from all releases to current directory |
-| download  | tagname           | download all files from a release to current directory    |
-| download  | tagname filename  | download file to current directory                        |
-| delete    | tagname filename  | delete a file from a release                              |
+| command   | parameters                 | description                                               |
+|-----------|----------------------------|-----------------------------------------------------------|
+| upload    | tagname filename           | upload a file to a release                                |
+| download  |                            | download all files from all releases to current directory |
+| download  | tagname                    | download all files from a release to current directory    |
+| download  | tagname filename           | download file to current directory                        |
+| delete    | tagname filename [options] | delete a file from a release                              |
+
+
+Optional parameters:
+
+* delete:
+
+```bash
+--keep-pattern KEEP_PATTERN
+```
+
+
+Remarks:
 
 When specifying filenames, shell-like wildcards are supported, but make sure to
 quote using single quotes, i.e. don't let the shell expand the wildcard pattern.
@@ -94,17 +159,32 @@ Examples:
 
 ```
 $ # upload all example-project-1.4* files in /home/me/pkg
-$ github-asset octocat/example-project upload 1.4 '/home/me/pkg/example-project-1.4*'
+$ githubrelease asset octocat/example-project upload 1.4 '/home/me/pkg/example-project-1.4*'
 
 $ # download all wheels from all releases
-$ github-asset octocat/example-project download '*' '*.whl'
+$ githubrelease asset octocat/example-project download '*' '*.whl'
 
 $ # download all files from release 1.4
-$ github-asset octocat/example-project download 1.4
+$ githubrelease asset octocat/example-project download 1.4
 
 $ # download all files from example-project
-# github-asset octocat/example-project download
+# githubrelease asset octocat/example-project download
 ```
+
+### ``ref`` command
+
+This command deals with git references. The general usage is:
+
+    githubrelease ref username/reponame command [options]
+
+It understands the following commands:
+
+| command   | parameters                             | description                                |
+|-----------|----------------------------------------|--------------------------------------------|
+| create    | ref sha                                | create reference (e.g heads/foo, tags/foo) |
+| list      | [--tags] [--pattern PATTERN]           | list all references                        |
+| delete    | [--tags] [--keep_pattern KEEP_PATTERN] | delete selected references                 |
+
 
 ## Miscellaneous
 
