@@ -48,21 +48,24 @@ Then, there are two options:
 * Set the `GITHUB_TOKEN` environment variable:
 
 ```bash
-export GITHUB_TOKEN=...
+export GITHUB_TOKEN=<TOKEN>
 /path/to/command
 ```
+
 
 * Put the key in `~/.netrc`, which should have mode 0600 (`-rw-------`):
 
 ```
 machine api.github.com
-login [TOKEN]
+login <TOKEN>
 password x-oauth-basic
 
 machine uploads.github.com
-login [TOKEN]
+login <TOKEN>
 password x-oauth-basic
 ```
+
+where ``<TOKEN>`` should be replaced with the generated token.
 
 # installed script
 
