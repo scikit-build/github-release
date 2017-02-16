@@ -209,7 +209,7 @@ It understands the following commands:
 |-----------|----------------------------------------|--------------------------------------------|
 | create    | ref sha                                | create reference (e.g heads/foo, tags/foo) |
 | list      | [--tags] [--pattern PATTERN]           | list all references                        |
-| delete    | [--tags] [--keep_pattern KEEP_PATTERN] | delete selected references                 |
+| delete    | pattern [--tags] [--keep_pattern KEEP_PATTERN] | delete selected references                 |
 
 
 # license
