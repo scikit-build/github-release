@@ -13,6 +13,19 @@ This quote from the original author says it all:
 >
 > This thing works nicely from an SSH session.
 
+# Table of Contents
+
+   * [githubrelease](#githubrelease)
+   * [installing](#installing)
+   * [configuring](#configuring)
+   * [installed script](#installed-script)
+      * [release command](#release-command)
+      * [asset command](#asset-command)
+      * [ref command](#ref-command)
+   * [Miscellaneous](#miscellaneous)
+
+<small>*Created by [gh-md-toc](https://github.com/ekalinin/github-markdown-toc)*</small>
+
 # installing
 
 Install it in the global python:
