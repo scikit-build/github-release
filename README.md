@@ -13,7 +13,7 @@ This quote from the original author says it all:
 >
 > This thing works nicely from an SSH session.
 
-## installing 
+# installing
 
 Install it in the global python:
 
@@ -23,7 +23,7 @@ pip install githubrelease
 
 Done!
 
-## configuring
+# configuring
 
 First, [generate a new token](https://help.github.com/articles/creating-an-access-token-for-command-line-use). It should have
 the repo scope.
@@ -49,7 +49,7 @@ login [TOKEN]
 password x-oauth-basic
 ```
 
-## installed script
+# installed script
 
 The package installs one CLI named ``githubrelease``.
 
@@ -73,7 +73,7 @@ Run 'githubrelease COMMAND --help' for more information on a command.
 
 <small>*For backward compatibility, it also installs `github-release` and `github-asset`*</small>
 
-### ``release`` command
+## ``release`` command
 
 This command deals with releases. The general usage is:
 
@@ -129,7 +129,7 @@ Optional parameters:
 ```
 
 
-### ``asset`` command
+## ``asset`` command
 
 This command deals with release assets. The general usage is:
 
@@ -178,7 +178,7 @@ $ # download all files from example-project
 # githubrelease asset octocat/example-project download
 ```
 
-### ``ref`` command
+## ``ref`` command
 
 This command deals with git references. The general usage is:
 
@@ -193,7 +193,7 @@ It understands the following commands:
 | delete    | [--tags] [--keep_pattern KEEP_PATTERN] | delete selected references                 |
 
 
-## Miscellaneous
+# Miscellaneous
 
 Written by Joost Molenaar and Jean-Christophe Fillion-Robin
 
