@@ -22,7 +22,7 @@ This quote from the original author says it all:
       * [release command](#release-command)
       * [asset command](#asset-command)
       * [ref command](#ref-command)
-   * [Miscellaneous](#miscellaneous)
+   * [license](#license)
 
 <small>*Created by [gh-md-toc](https://github.com/ekalinin/github-markdown-toc)*</small>
 
@@ -206,7 +206,7 @@ It understands the following commands:
 | delete    | [--tags] [--keep_pattern KEEP_PATTERN] | delete selected references                 |
 
 
-# Miscellaneous
+# license
 
 Written by Joost Molenaar and Jean-Christophe Fillion-Robin
 
