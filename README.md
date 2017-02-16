@@ -48,7 +48,7 @@ Then, there are two options:
 * Set the `GITHUB_TOKEN` environment variable:
 
 ```bash
-export GITHUB_TOKEN=<TOKEN>
+export GITHUB_TOKEN=YOUR_TOKEN
 /path/to/command
 ```
 
@@ -57,15 +57,15 @@ export GITHUB_TOKEN=<TOKEN>
 
 ```
 machine api.github.com
-login <TOKEN>
+login YOUR_TOKEN
 password x-oauth-basic
 
 machine uploads.github.com
-login <TOKEN>
+login YOUR_TOKEN
 password x-oauth-basic
 ```
 
-where ``<TOKEN>`` should be replaced with the generated token.
+where ``YOUR_TOKEN`` should be replaced with the generated token.
 
 # installed script
 
