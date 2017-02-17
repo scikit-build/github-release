@@ -46,6 +46,7 @@ Python, you should probably look into project like [PyGithub](https://github.com
       * [release command](#release-command)
       * [asset command](#asset-command)
       * [ref command](#ref-command)
+   * [using the module](#using-the-module)
    * [license](#license)
 
 <!--
@@ -222,6 +223,46 @@ It understands the following commands:
 | create    | ref sha                                | create reference (e.g heads/foo, tags/foo) |
 | list      | [--tags] [--pattern PATTERN]           | list all references                        |
 | delete    | pattern [--tags] [--keep_pattern KEEP_PATTERN] | delete selected references                 |
+
+
+# using the module
+
+The python API mirrors the command-line interface. Most of the available
+function names follows this pattern:
+
+```
+gh_<COMMAND>_<COMMAND>
+```
+
+where the first ``<COMMAND>`` is either ``release``,
+``asset`` or ``ref`` and the second one is any command respectively
+documented above.
+
+The parameters accepted by each function also mirrors the command-line
+interface. The usual signature is:
+
+```python
+gh_<COMMAND>_<COMMAND>(repo_name, [param, [param,]] [option, [option]])
+```
+
+For example, here is the signature for ``gh_release_create``:
+
+```python
+def gh_release_create(repo_name, tag_name, 
+                      name=None, publish=False, prerelease=False, target_commitish=None):
+```
+
+The type of each parameters or options can usually be inferred from
+its name. If not, consider looking at [github_release.py](https://github.com/j0057/github-release/blob/update-readme/github_release.py).
+
+```
+repo_name        -> str
+tag_name         -> str
+name             -> str
+publish          -> bool
+prerelease       -> bool
+target_commitish -> str
+```
 
 
 # license
