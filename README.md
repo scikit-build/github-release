@@ -47,6 +47,7 @@ Python, you should probably look into project like [PyGithub](https://github.com
       * [asset command](#asset-command)
       * [ref command](#ref-command)
    * [using the module](#using-the-module)
+   * [maintainers: how to make a release ?](#maintainers-how-to-make-a-release-)
    * [license](#license)
 
 <!--
@@ -263,6 +264,49 @@ publish          -> bool
 prerelease       -> bool
 target_commitish -> str
 ```
+
+# maintainers: how to make a release ?
+
+1. Configure `~/.pypirc` as described [here](https://packaging.python.org/distributing/#uploading-your-project-to-pypi).
+
+2. Make sure the cli and module work as expected
+
+3. Tag the release. Requires a GPG key with signatures. For version *X.Y.Z*::
+
+    ```bash
+    git tag -s -m "githubrelease X.Y.Z" X.Y.Z origin/master
+    ```
+
+4. Create the source tarball and binary wheels::
+
+    ```bash
+    rm -rf dist/
+    python setup.py sdist bdist_wheel
+    ```
+
+5. Upload the packages to the testing PyPI instance::
+
+    ```bash
+    twine upload --sign -r pypitest dist/*
+    ```
+
+6. Check the [PyPI testing package page](https://testpypi.python.org/pypi/githubrelease/).
+
+7. Upload the packages to the PyPI instance::
+
+    ```bash
+    twine upload --sign dist/*
+    ```
+
+8. Check the [PyPI package page](https://pypi.python.org/pypi/githubrelease/).
+
+9. Make sure the package can be installed::
+
+    ```bash
+    mkvirtualenv test-pip-install
+    pip install githubrelease
+    rmvirtualenv test-pip-install
+    ```
 
 
 # license
