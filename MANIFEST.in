@@ -1,0 +1,11 @@
+include .flake8
+include CHANGES.md
+include CONTRIBUTING.md
+include LICENSE_Apache_20
+include MANIFEST.in
+include README.md
+include requirements.txt
+include requirements-dev.txt
+
+recursive-exclude * __pycache__
+recursive-exclude * *.py[co]
