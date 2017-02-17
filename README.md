@@ -105,9 +105,9 @@ It understands the following commands:
 | info          | tagname           | list one release                  |
 | create        | tagname [options] | create a release                  |
 | edit          | tagname [options] | Edit a release                    |
-| delete        | tagname           | delete a release                  |
-| publish       | tagname [options] | make release public               |
-| unpublish     | tagname [options] | make release draft                |
+| delete        | tagname                | delete a release             |
+| publish       | tagname [--prerelease] | make release public          |
+| unpublish     | tagname [--prerelease] | make release draft           |
 | release-notes | tagname           | use $EDITOR to edit release notes |
 
 **Optional parameters:**
@@ -132,18 +132,6 @@ It understands the following commands:
   --prerelease
   --dry-run
   --verbose
-```
-
-* publish:
-
-```bash
-  --prerelease
-```
-
-* unpublish:
-
-```bash
-  --prerelease
 ```
 
 
