@@ -539,7 +539,7 @@ def print_ref_info(ref, indent=""):
     print("")
 
 
-def get_refs(repo_name, tags=False, pattern=None):
+def get_refs(repo_name, tags=None, pattern=None):
     response = _request(
           'GET', GITHUB_API + '/repos/{0}/git/refs'.format(repo_name))
     response.raise_for_status()
@@ -563,7 +563,7 @@ def get_refs(repo_name, tags=False, pattern=None):
     return filtered_data
 
 
-def gh_ref_list(repo_name, tags=False,  pattern=None, verbose=False):
+def gh_ref_list(repo_name, tags=None,  pattern=None, verbose=False):
     refs = get_refs(repo_name, tags=tags, pattern=pattern)
     if verbose:
         map(print_ref_info, sorted(refs, key=lambda r: r['ref']))
