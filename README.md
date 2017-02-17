@@ -47,6 +47,7 @@ Python, you should probably look into project like [PyGithub](https://github.com
       * [asset command](#asset-command)
       * [ref command](#ref-command)
    * [using the module](#using-the-module)
+   * [testing](#testing)
    * [maintainers: how to make a release ?](#maintainers-how-to-make-a-release-)
    * [license](#license)
 
@@ -264,6 +265,18 @@ publish          -> bool
 prerelease       -> bool
 target_commitish -> str
 ```
+
+# testing
+
+There are no formal tests yet :(
+
+The plan is to leverage tools like [betamax](http://betamax.readthedocs.io)
+allowing to intercept every request made and attempting to find a matching request
+that has already been intercepted and recorded.
+
+In the mean time, beside of manual testing, running the tests associated with
+the ``publish_github_release`` add-on provided by [scikit-ci-addons](scikit-ci-addons.readthedocs.io/en/latest/addons.html#publish-github-release-py)
+is all we have.
 
 # maintainers: how to make a release ?
 
