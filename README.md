@@ -1,9 +1,9 @@
 # githubrelease
 
-This is a [CLI](https://en.wikipedia.org/wiki/Command-line_interface) to easily
-manage GitHub releases, assets and references.
+This project aims at streamlining the distribution of
+[releases](https://github.com/blog/1547-release-your-software) on Github.
 
-This quote from the original author says it all:
+The original author:
 
 > I made it because it sucks to have to download a file from a server,
 > only to upload it to Github from the desktop.
@@ -13,12 +13,37 @@ This quote from the original author says it all:
 >
 > This thing works nicely from an SSH session.
 
+
+In a nutshell, it allows to easily manage GitHub releases and
+associated assets.
+
+For example:
+
+```bash
+$ githubrelease release jcfr/sandbox create 1.0.0 --prerelease
+created '1.0.0' release
+
+$ githubrelease asset jcfr/sandbox 1.0.0 "dist/*"
+uploading '1.0.0' release asset(s) (found 16):
+```
+
+And it can even be imported as a python module:
+
+```python
+from github_release import gh_release_create, gh_asset_upload
+gh_release_create("jcfr/sandbox ", "1.0.0", prerelease=True)
+gh_asset_upload("jcfr/sandbox", "1.0.0", "dist/*")
+```
+
+That said, if you are looking for a full fledged GitHub API support for
+Python, you should probably look into project like [PyGithub](https://github.com/PyGithub/PyGithub)
+
 # Table of Contents
 
    * [githubrelease](#githubrelease)
    * [installing](#installing)
    * [configuring](#configuring)
-   * [installed script](#installed-script)
+   * [using the cli](#using-the-cli)
       * [release command](#release-command)
       * [asset command](#asset-command)
       * [ref command](#ref-command)
@@ -67,7 +92,7 @@ password x-oauth-basic
 
 where ``YOUR_TOKEN`` should be replaced with the generated token.
 
-# installed script
+# using the cli
 
 The package installs one CLI named ``githubrelease``.
 
