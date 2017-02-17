@@ -2,6 +2,9 @@
 
 from setuptools import setup
 
+with open('README.md', 'r') as fp:
+    readme = fp.read()
+
 with open('requirements.txt', 'r') as fp:
     requirements = list(filter(bool, (line.strip() for line in fp)))
 
@@ -12,6 +15,10 @@ setup_requires = ['setuptools-version-command']
 
 setup(
     name='githubrelease',
+
+    description='githubrelease is a CLI to easily manage GitHub releases, '
+                'assets and references',
+    long_description=readme,
 
     url='https://github.com/j0057/github-release',
 
