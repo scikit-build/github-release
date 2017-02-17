@@ -109,6 +109,8 @@ Build System
 
 * Add ``setuptools-version-command`` to `requirements-dev.txt`.
 
+* Add `setup.cfg` to mark the wheels as `universal`.
+
 
 Documentation
 -------------
