@@ -324,7 +324,7 @@ is all we have.
 
 # license
 
-Written by Joost Molenaar and Jean-Christophe Fillion-Robin
+Written by Joost Molenaar ([@j0057](https://github.com/j0057)) and Jean-Christophe Fillion-Robin ([@jcfr](https://github.com/jcfr))
 
 It is covered by the Apache License, Version 2.0:
 
