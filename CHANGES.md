@@ -116,3 +116,5 @@ Documentation
 * Re-organize and improve [README.md](https://github.com/j0057/github-release/tree/add-changes-md#table-of-contents).
 
 * Add [maintainers: how to make a release ?](https://github.com/j0057/github-release/tree/add-changes-md#maintainers-how-to-make-a-release-) section.
+
+* Add [CONTRIBUTING](https://github.com/j0057/github-release/blob/master/CONTRIBUTING.md#contributing) guidelines.
