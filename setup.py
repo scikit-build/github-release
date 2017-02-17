@@ -27,7 +27,15 @@ setup(
             'github-asset = github_release:gh_asset'
         ]},
     classifiers=[
+        'Environment :: Console',
+        'Intended Audience :: Developers',
         'License :: OSI Approved :: Apache Software License',
+        'Natural Language :: English',
+        'Operating System :: OS Independent',
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 3',
+        'Topic :: Software Development :: Version Control',
+        'Topic :: System :: Software Distribution'
     ],
     license="Apache",
 )
