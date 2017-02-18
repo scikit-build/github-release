@@ -4,6 +4,8 @@ build
 dist
 *.egg-info
 *.pyc
+.cache
+.tox
 
 # IDE junk
 .idea/*

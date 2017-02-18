@@ -1,2 +1,5 @@
 flake8
+pytest>=3.0.3
+pytest-runner>=2.9
 setuptools-version-command
+tox

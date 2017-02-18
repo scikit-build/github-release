@@ -1,0 +1,15 @@
+include .flake8
+include CHANGES.md
+include CONTRIBUTING.md
+include LICENSE_Apache_20
+include MANIFEST.in
+include pytest.ini
+include README.md
+include requirements.txt
+include requirements-dev.txt
+include tox.ini
+
+recursive-include tests *
+
+recursive-exclude * __pycache__
+recursive-exclude * *.py[co]
