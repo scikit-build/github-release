@@ -722,20 +722,6 @@ RELEASE_COMMANDS = {
     'release-notes': gh_release_notes,
     'debug': gh_release_debug
 }
-"""
-Examples::
-
-    gh-release j0057/iplbapi list
-    gh-release j0057/iplbapi info 1.4.3
-    gh-release j0057/iplbapi create 1.4.4
-    gh-release j0057/iplbapi edit 1.4.4 --name "Release 1.4.4"
-    gh-release j0057/iplbapi delete 1.4.4
-    gh-release j0057/iplbapi publish 1.4.4
-    gh-release j0057/iplbapi unpublish 1.4.4
-    gh-release j0057/iplbapi release-notes 1.4.3
-    gh-release j0057/iplbapi debug 1.4.3
-
-"""
 
 
 @handle_http_error
@@ -749,17 +735,6 @@ ASSET_COMMANDS = {
     'delete': gh_asset_erase,
     'erase': gh_asset_erase,
 }
-"""
-Examples::
-
-    gh-asset j0057/iplbapi upload 1.4.4 bla-bla_1.4.4.whl
-    gh-asset j0057/iplbapi download
-    gh-asset j0057/iplbapi download 1.4.4
-    gh-asset j0057/iplbapi download 1.4.4 bla-bla_1.4.4.whl
-    gh-asset j0057/iplbapi erase 1.4.4 bla-bla_1.4.4.whl
-    gh-asset j0057/iplbapi erase 1.4.4 bla-bla_1.4.4.whl
-
-"""
 
 
 @handle_http_error
