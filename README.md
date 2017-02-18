@@ -37,7 +37,8 @@ gh_asset_upload("jcfr/sandbox", "1.0.0", "dist/*")
 ```
 
 That said, if you are looking for a full fledged GitHub API support for
-Python, you should probably look into project like [PyGithub](https://github.com/PyGithub/PyGithub)
+Python, you should probably look into project like [github3py](http://github3py.readthedocs.io/en/latest/) or
+[PyGithub](https://github.com/PyGithub/PyGithub)
 
 # Table of Contents
 
