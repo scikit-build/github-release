@@ -755,18 +755,20 @@ def gh_ref(argv=None, prog=None):
 
 
 PROG = os.path.basename(sys.argv[0])
-HELP = """Usage: {prog} COMMAND [OPTIONS]
+HELP = """Usage: {prog} COMMAND REPOSITORY [OPTIONS]
        {prog} [-h]
 
 A CLI to easily manage GitHub releases, assets and references.
-
-Options:
-    -h, --help       Show this help message and exit
 
 Commands:
     release    Manage releases (list, create, delete, ...)
     asset      Manage release assets (upload, download, ...)
     ref        Manage references (list, create, delete, ...)
+
+Repository:    Repository to update (e.g octocat/hello-worId)
+
+Options:
+    -h, --help       Show this help message and exit
 
 Run '{prog} COMMAND --help' for more information on a command.
 """.format(prog=PROG)

@@ -103,18 +103,20 @@ The package installs one CLI named ``githubrelease``.
 
 ```bash
 $ githubrelease 
-Usage: githubrelease COMMAND [OPTIONS]
+Usage: githubrelease COMMAND REPOSITORY [OPTIONS]
        githubrelease [-h]
 
 A CLI to easily manage GitHub releases, assets and references.
-
-Options:
-    -h, --help       Show this help message and exit
 
 Commands:
     release    Manage releases (list, create, delete, ...)
     asset      Manage release assets (upload, download, ...)
     ref        Manage references (list, create, delete, ...)
+
+Repository:    Repository to update (e.g octocat/hello-worId)
+
+Options:
+    -h, --help       Show this help message and exit
 
 Run 'githubrelease COMMAND --help' for more information on a command.
 ```
