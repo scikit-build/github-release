@@ -59,8 +59,8 @@ def get_releases(repo_name, verbose=False):
     response.raise_for_status()
     releases = response.json()
     if verbose:
-        map(print_release_info,
-            sorted(response.json(), key=lambda r: r['tag_name']))
+        list(map(print_release_info,
+                 sorted(response.json(), key=lambda r: r['tag_name'])))
     return releases
 
 
@@ -565,10 +565,11 @@ def get_refs(repo_name, tags=None, pattern=None):
 
 def gh_ref_list(repo_name, tags=None,  pattern=None, verbose=False):
     refs = get_refs(repo_name, tags=tags, pattern=pattern)
+    sorted_refs = sorted(refs, key=lambda r: r['ref'])
     if verbose:
-        map(print_ref_info, sorted(refs, key=lambda r: r['ref']))
+        list(map(print_ref_info, sorted_refs))
     else:
-        map(lambda ref: print(ref['ref']), sorted(refs, key=lambda r: r['ref']))
+        list(map(lambda ref: print(ref['ref']), sorted_refs))
 
 
 gh_ref_list.description = {
