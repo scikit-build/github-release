@@ -5,7 +5,6 @@
 This project aims at streamlining the distribution of
 [releases](https://github.com/blog/1547-release-your-software) on Github.
 
-
 > I made it because it sucks to have to download a file from a server,
 > only to upload it to Github from the desktop.
 >
@@ -17,15 +16,16 @@ This project aims at streamlining the distribution of
 > -- <cite>@j0057 on Wednesday, August 13, 2014</cite>
 
 
-In a nutshell, it allows to easily manage GitHub releases and
-associated assets directly from the command-line:
+# examples
+
+from the command-line:
 
 ```bash
+# create a release
 $ githubrelease release jcfr/sandbox create 1.0.0 --prerelease
-created '1.0.0' release
 
+# upload assets
 $ githubrelease asset jcfr/sandbox 1.0.0 "dist/*"
-uploading '1.0.0' release asset(s) (found 16):
 ```
 
 ... or even from python:
@@ -36,13 +36,15 @@ gh_release_create("jcfr/sandbox ", "1.0.0", prerelease=True)
 gh_asset_upload("jcfr/sandbox", "1.0.0", "dist/*")
 ```
 
-That said, if you are looking for a full fledged GitHub API support for
+*That said, if you are looking for a full fledged GitHub API support for
 Python, you should probably look into project like [github3py](http://github3py.readthedocs.io/en/latest/) or
-[PyGithub](https://github.com/PyGithub/PyGithub)
+[PyGithub](https://github.com/PyGithub/PyGithub)*
 
 # Table of Contents
 
    * [githubrelease](#githubrelease)
+   * [examples](#examples)
+   * [features](#features)
    * [installing](#installing)
    * [configuring](#configuring)
    * [using the cli](#using-the-cli)
@@ -55,23 +57,31 @@ Python, you should probably look into project like [github3py](http://github3py.
    * [license](#license)
 
 <!--
-<small>*Created by [gh-md-toc](https://github.com/ekalinin/github-markdown-toc)*</small>
+*Created by [gh-md-toc](https://github.com/ekalinin/github-markdown-toc)*
 -->
+
+# features
+
+* create release, pre-release, or draft release
+* update any release metadata including referenced commit
+* support wildcard expression (or list of wildcard expressions):
+  * for upload or download of assets
+  * for selectively deleting assets
+* allow deleting individual asset from a release
+* authentication through `GITHUB_TOKEN` environment variable or `~/.netrc` file
+* pure python, no dependencies beside of [requests](http://docs.python-requests.org/en/master/)
+
 
 # installing
 
-Install it in the global python:
-
-```
+```bash
 pip install githubrelease
 ```
 
-Done!
-
 # configuring
 
-First, [generate a new token](https://help.github.com/articles/creating-an-access-token-for-command-line-use). It should have
-the repo scope.
+First, [generate a new token](https://help.github.com/articles/creating-an-access-token-for-command-line-use). It
+should have at least the repo scope.
 
 Then, there are two options:
 
@@ -103,29 +113,33 @@ The package installs one CLI named ``githubrelease``.
 
 ```bash
 $ githubrelease 
-Usage: githubrelease COMMAND [OPTIONS]
+Usage: githubrelease COMMAND REPOSITORY [OPTIONS]
        githubrelease [-h]
 
 A CLI to easily manage GitHub releases, assets and references.
-
-Options:
-    -h, --help       Show this help message and exit
 
 Commands:
     release    Manage releases (list, create, delete, ...)
     asset      Manage release assets (upload, download, ...)
     ref        Manage references (list, create, delete, ...)
 
+Repository:    Repository to update (e.g octocat/hello-worId)
+
+Options:
+    -h, --help       Show this help message and exit
+
 Run 'githubrelease COMMAND --help' for more information on a command.
 ```
 
-<small>*For backward compatibility, it also installs `github-release` and `github-asset`*</small>
+*For backward compatibility, it also installs `github-release` and `github-asset`*
 
 ## ``release`` command
 
 This command deals with releases. The general usage is:
 
-    githubrelease release username/reponame command [tag] [options]
+```bash
+githubrelease release username/reponame command [tag] [options]
+```
 
 It understands the following commands:
 
@@ -169,7 +183,9 @@ It understands the following commands:
 
 This command deals with release assets. The general usage is:
 
-    githubrelease asset username/reponame command [tag] [filename] [options]
+```bash
+githubrelease asset username/reponame command [tag] [filename] [options]
+```
 
 It understands the following commands:
 
@@ -201,25 +217,27 @@ For the `download` command, you also need to specify a tagname of `'*'`
 
 **Examples:**
 
-```
-$ # upload all example-project-1.4* files in /home/me/pkg
-$ githubrelease asset octocat/example-project upload 1.4 '/home/me/pkg/example-project-1.4*'
+```bash
+# upload all example-project-1.4* files in /home/me/pkg
+githubrelease asset octocat/example-project upload 1.4 '/home/me/pkg/example-project-1.4*'
 
-$ # download all wheels from all releases
-$ githubrelease asset octocat/example-project download '*' '*.whl'
+# download all wheels from all releases
+githubrelease asset octocat/example-project download '*' '*.whl'
 
-$ # download all files from release 1.4
-$ githubrelease asset octocat/example-project download 1.4
+# download all files from release 1.4
+githubrelease asset octocat/example-project download 1.4
 
-$ # download all files from example-project
-# githubrelease asset octocat/example-project download
+# download all files from example-project
+githubrelease asset octocat/example-project download
 ```
 
 ## ``ref`` command
 
 This command deals with git references. The general usage is:
 
-    githubrelease ref username/reponame command [options]
+```bash
+githubrelease ref username/reponame command [options]
+```
 
 It understands the following commands:
 
