@@ -22,7 +22,8 @@ GITHUB_API = "https://api.github.com"
 
 
 def _request(*args, **kwargs):
-    if "GITHUB_TOKEN" in os.environ:
+    with_auth = kwargs.pop("with_auth", True)
+    if "GITHUB_TOKEN" in os.environ and with_auth:
         kwargs["auth"] = (os.environ["GITHUB_TOKEN"], 'x-oauth-basic')
     return request(*args, **kwargs)
 
@@ -261,6 +262,7 @@ gh_release_edit.description = {
 def gh_release_delete(repo_name, pattern, keep_pattern=None,
                       dry_run=False, verbose=False):
     releases = get_releases(repo_name)
+    deleted = False
     for release in releases:
         if not fnmatch.fnmatch(release['tag_name'], pattern):
             if verbose:
@@ -277,6 +279,8 @@ def gh_release_delete(repo_name, pattern, keep_pattern=None,
                + '/repos/{0}/releases/{1}'.format(repo_name, release['id']))
         response = _request('DELETE', url)
         response.raise_for_status()
+        deleted = True
+    return deleted
 
 
 gh_release_delete.description = {
@@ -493,6 +497,7 @@ gh_asset_erase.description = {
 
 def gh_asset_download(repo_name, tag_name=None, pattern=None):
     releases = get_releases(repo_name)
+    downloaded = 0
     for release in releases:
         if tag_name and not fnmatch.fnmatch(release['tag_name'], tag_name):
             continue
@@ -500,6 +505,11 @@ def gh_asset_download(repo_name, tag_name=None, pattern=None):
             if pattern and not fnmatch.fnmatch(asset['name'], pattern):
                 continue
             if os.path.exists(asset['name']):
+                absolute_path = os.path.abspath(asset['name'])
+                print('release {0}: '
+                      'skipping {1}: '
+                      'found {2}'.format(
+                        release['tag_name'], asset['name'], absolute_path))
                 continue
             print('release {0}: '
                   'downloading {1}'.format(release['tag_name'], asset['name']))
@@ -511,9 +521,13 @@ def gh_asset_download(repo_name, tag_name=None, pattern=None):
                 headers={'Accept': 'application/octet-stream'})
             while response.status_code == 302:
                 response = _request(
-                    'GET', response.headers['Location'], allow_redirects=False)
+                    'GET', response.headers['Location'], allow_redirects=False,
+                    with_auth=False
+                )
             with open(asset['name'], 'w+b') as f:
                 f.write(response.content)
+            downloaded += 1
+    return downloaded
 
 
 gh_asset_download.description = {

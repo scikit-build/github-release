@@ -289,15 +289,32 @@ target_commitish -> str
 
 # testing
 
-There are no formal tests yet :(
+There are tests running automatically on TravisCI:
+* coding style checks
+* integration tests
 
-The plan is to leverage tools like [betamax](http://betamax.readthedocs.io)
+Since the integration tests are expecting ``GITHUB_TOKEN`` to be set, they will
+**NOT** be executed when pull request from fork are submitted. Indeed, setting
+``GITHUB_TOKEN`` is required by the tests to reset and update [jcfr/github-release-test](https://github.com/jcfr/github-release-test).
+
+To execute the integration tests locally, and make sure your awesome contribution
+is working as expected, you will have to:
+* create a test repository with at least one commit (e.g `yourname/github-release-test`)
+* set environment variable ``INTEGRATION_TEST_REPO_NAME=yourname/github-release-test``
+* execute ``python setup.py test``
+
+To execute a specific test, the following also works:
+
+```bash
+export GITHUB_TOKEN=YOUR_TOKEN
+export INTEGRATION_TEST_REPO_NAME=yourname/github-release-test
+$ pytest tests/test_integration_release_create.py::test_create_release
+```
+
+Moving forward, the plan would be to leverage tools like [betamax](http://betamax.readthedocs.io)
 allowing to intercept every request made and attempting to find a matching request
 that has already been intercepted and recorded.
 
-In the mean time, beside of manual testing, running the tests associated with
-the ``publish_github_release`` add-on provided by [scikit-ci-addons](scikit-ci-addons.readthedocs.io/en/latest/addons.html#publish-github-release-py)
-is all we have.
 
 # maintainers: how to make a release ?
 
