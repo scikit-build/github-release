@@ -295,7 +295,8 @@ There are tests running automatically on TravisCI:
 
 Since the integration tests are expecting ``GITHUB_TOKEN`` to be set, they will
 **NOT** be executed when pull request from fork are submitted. Indeed, setting
-``GITHUB_TOKEN`` is required by the tests to reset and update [jcfr/github-release-test](https://github.com/jcfr/github-release-test).
+``GITHUB_TOKEN`` is required by the tests to reset and update [jcfr/github-release-test-py2](https://github.com/jcfr/github-release-test-py2)
+and [jcfr/github-release-test-py3](https://github.com/jcfr/github-release-test-py3).
 
 To execute the integration tests locally, and make sure your awesome contribution
 is working as expected, you will have to:
