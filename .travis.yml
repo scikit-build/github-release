@@ -10,9 +10,13 @@ matrix:
 
     - os: linux
       python: "3.5.2"
+      env:
+        - INTEGRATION_TEST_REPO_NAME=jcfr/github-release-test-py3
 
     - os: linux
       python: "2.7"
+      env:
+        - INTEGRATION_TEST_REPO_NAME=jcfr/github-release-test-py2
 
 install:
   - pip install -r requirements-dev.txt
@@ -20,3 +24,7 @@ install:
 
 script:
   - tox
+
+env:
+  global:
+    secure: "xFFztlppLk1bDtry9CVZonQtFgYlaAZBUACFSY1xxuGgcM3GC6JdiYHaaqekeF1wY2dcbIAVrfYI1rXmA9V7kLLpM5nv6Pd38rIP0wlKbxoHsOaWIsJMZPgjie7eQLRyRyKD5xaZpWsqumlIs3LkwaWrPqpiQq2bhzZWpoFniZAKDAaptSuoo3TZ2zO4xxXpQFys8iZwBmRbcaHXCh5HFMmR9TMDudfCLs4WKLykwc3rFyVQNU+Ai1Hn/RUdqEac3rFpFGbi6k2GWNM+DmCjKwNdWlOZT/ttP8J8pY1QPxn32rbPiB2WS8LVMrHJ5BKuCU0drfeWN/zzcEDTVX+QlX1G+1Yb1VorkeSOAffH8Lop3XLn63FsaFJh+TwlRzcHPcGE0CGz7xZT3BQcuNVUd1ugZC7Tni87dxwCUkx+owneW1xfjQNbbT/5ZhAAxHJjqWnAXjH9HuHI/+Pdp/vALmkVJgI/PipJQ+KzWfTWu7rWX8IRHYNkH+FwuDFcBJrRU008vEZm3YqErZ+Hn0GLpAuIK4Pa6j3YJPr+DXnk0dqHhM5YL9QOyajGBBQhN2KrEfu4/gPpaIEHdF1m8EiDA5FNDeODBdaruigNqrE4d47Cyd/oLMAUx3PCRs7w672JAbKWHXyOwk8IEYoTuQcQjEp9cY5ZQzzP+vk0c8OS5Kw="

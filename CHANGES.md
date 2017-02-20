@@ -102,8 +102,8 @@ Backward compatibility
 Build System
 ------------
 
-* Setup continuous integration on TravisCI to run style tests with each pull
-  requests.
+* Setup continuous integration on TravisCI to run style and integration
+  tests with each pull requests.
 
 * Clean and simplify ``setup.py``.
 
