@@ -17,8 +17,6 @@ from . import (
 import github_release as ghr
 
 
-@git_user_email_required
-@git_user_name_required
 @github_token_required
 @integration_test_repo_name_required
 @pytest.mark.parametrize("release_type", ['draft', 'prerelease', 'release'])
@@ -109,8 +107,6 @@ def test_edit_target_commitish(gh_src_dir, release_type):
         ]))
 
 
-@git_user_email_required
-@git_user_name_required
 @github_token_required
 @integration_test_repo_name_required
 @pytest.mark.parametrize("release_type", ['draft', 'prerelease', 'release'])
@@ -153,8 +149,6 @@ def test_edit_name_and_body(release_type):
     ]))
 
 
-@git_user_email_required
-@git_user_name_required
 @github_token_required
 @integration_test_repo_name_required
 @pytest.mark.parametrize("from_release_type",

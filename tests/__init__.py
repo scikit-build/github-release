@@ -190,7 +190,7 @@ def reset():
     # Reset to first commit
     first_sha = run("git log --reverse --pretty=\"%H\"", limit=1)
     run("git reset --hard %s" % first_sha)
-    run("git push origin master --force")
+    run("git push --quiet origin master --force")
 
     clear_github_release_and_tags()
 
@@ -254,13 +254,13 @@ def do_commit(version=None, release_tag=None, push=False):
                                             commit_date.isoformat()))
     # Push
     if push:
-        run("git push origin master")
+        run("git push --quiet origin master")
     # Create tag
     if release_tag is not None:
         run("git tag -a -m \"ENH: %s %s\" %s" % (
             PROJECT_NAME, release_tag, release_tag))
         if push:
-            run("git push origin %s" % release_tag)
+            run("git push --quiet origin %s" % release_tag)
     print("")
 
     return run("git rev-parse HEAD", limit=1)
