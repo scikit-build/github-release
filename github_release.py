@@ -221,11 +221,11 @@ gh_release_create.description = {
   "help": "Create a release",
   "params": [
       "repo_name", "tag_name", "--name",
-      "--publish", "--prerelease", "--target_commitish"
+      "--publish", "--prerelease", "--target-commitish"
   ],
   "optional_params": {
       "--name": str, "--publish": bool,
-      "--prerelease": bool, "--target_commitish": str
+      "--prerelease": bool, "--target-commitish": str
   }
 }
 
@@ -248,12 +248,12 @@ gh_release_edit.description = {
   "help": "Edit a release",
   "params": [
       "repo_name", "current_tag_name",
-      "--tag_name", "--target_commitish", "--name", "--body",
+      "--tag-name", "--target-commitish", "--name", "--body",
       "--draft", "--prerelease",
       "--dry-run", "--verbose"
   ],
   "optional_params": {
-      "--tag_name": str, "--target_commitish": str,
+      "--tag-name": str, "--target-commitish": str,
       "--name": str, "--body": str, "--draft": bool, "--prerelease": bool,
       "--dry-run": bool, "--verbose": bool
   },
@@ -537,8 +537,8 @@ def gh_asset_download(repo_name, tag_name=None, pattern=None):
 
 gh_asset_download.description = {
   "help": "Download release assets",
-  "params": ["repo_name", "--tag_name", "--pattern"],
-  "optional_params": {"--tag_name": str, "--pattern": str}
+  "params": ["repo_name", "--tag-name", "--pattern"],
+  "optional_params": {"--tag-name": str, "--pattern": str}
 }
 
 

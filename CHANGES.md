@@ -4,8 +4,13 @@ Next Release
 CLI
 ---
 
-* Consistently accept ``--keep-pattern`` instead of ``--keep_pattern``. This change
-  breaks backward compatibility.
+* Backward incompatible changes:
+
+  * Consistently accept ``--keep-pattern`` instead of ``--keep_pattern``.
+
+  * Change ``--tag_name`` into ``--tag-name``.
+
+  * Change ``--target_commitish`` into ``--target-commitish``.
 
 Testing
 -------

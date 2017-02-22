@@ -162,14 +162,14 @@ It understands the following commands:
   --name NAME
   --publish
   --prerelease
-  --target_commitish TARGET_COMMITISH
+  --target-commitish TARGET_COMMITISH
 ```
 
 * edit:
 
 ```bash
-  --tag_name TAG_NAME
-  --target_commitish TARGET_COMMITISH
+  --tag-name TAG_NAME
+  --target-commitish TARGET_COMMITISH
   --name NAME
   --body BODY
   --draft
