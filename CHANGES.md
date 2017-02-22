@@ -1,3 +1,17 @@
+Next Release
+============
+
+CLI
+---
+
+* Consistently accept ``--keep-pattern`` instead of ``--keep_pattern``. This change
+  breaks backward compatibility.
+
+Testing
+-------
+
+* Add test checking that expected command line arguments do not cause failure.
+
 1.5.0
 =====
 

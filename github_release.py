@@ -285,8 +285,8 @@ def gh_release_delete(repo_name, pattern, keep_pattern=None,
 
 gh_release_delete.description = {
   "help": "Delete selected releases",
-  "params": ["repo_name", "pattern", "keep_pattern", "dry-run", "verbose"],
-  "optional_params": {"keep_pattern": str, "dry-run": bool, "verbose": bool}
+  "params": ["repo_name", "pattern", "keep-pattern", "dry-run", "verbose"],
+  "optional_params": {"keep-pattern": str, "dry-run": bool, "verbose": bool}
 }
 
 
@@ -635,9 +635,9 @@ def gh_ref_delete(repo_name, pattern, keep_pattern=None, tags=False,
 
 gh_ref_delete.description = {
   "help": "Delete selected references",
-  "params": ["repo_name", "pattern", "keep_pattern", "tags",
+  "params": ["repo_name", "pattern", "keep-pattern", "tags",
              "dry-run", "verbose"],
-  "optional_params": {"keep_pattern": str, "tags": bool,
+  "optional_params": {"keep-pattern": str, "tags": bool,
                       "dry-run": bool, "verbose": bool}
 }
 

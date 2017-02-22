@@ -62,6 +62,14 @@ def push_dir(directory=None, make_directory=False):
     os.chdir(old_cwd)
 
 
+@contextmanager
+def push_argv(argv):
+    old_argv = sys.argv
+    sys.argv = argv
+    yield
+    sys.argv = old_argv
+
+
 #
 # Subprocess
 #
