@@ -4,6 +4,9 @@ Next Release
 CLI
 ---
 
+* Fix asset download command argument parsing. `tag_name` and `pattern` are
+  effectively optional positional arguments.
+
 * Backward incompatible changes:
 
   * Consistently accept ``--keep-pattern`` instead of ``--keep_pattern``.

@@ -537,8 +537,8 @@ def gh_asset_download(repo_name, tag_name=None, pattern=None):
 
 gh_asset_download.description = {
   "help": "Download release assets",
-  "params": ["repo_name", "--tag-name", "--pattern"],
-  "optional_params": {"--tag-name": str, "--pattern": str}
+  "params": ["repo_name", "tag_name", "pattern"],
+  "optional_params": {"tag_name": str, "pattern": str}
 }
 
 
@@ -700,8 +700,11 @@ def _gh_parser(commands, prog=None):
         for cmd_param in cmd_params:
             if cmd_param == "repo_name":  # parameter already specified above
                 continue
-            if cmd_param not in cmd_opt_params.keys():
-                cmd_parser.add_argument(cmd_param, type=str)
+            if cmd_param[:2] != "--":
+                params = {"type": str}
+                if cmd_param in cmd_opt_params:
+                    params = {"nargs": "?"}
+                cmd_parser.add_argument(cmd_param, **params)
             else:
                 if cmd_opt_params[cmd_param] is bool:
                     cmd_parser.add_argument(

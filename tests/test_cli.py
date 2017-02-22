@@ -12,8 +12,8 @@ from . import push_argv
     # ("asset", "upload", ["asset", "org/user", "upload"]),
     ("asset", "upload", ["asset", "org/user", "upload", "1.0.0", "dist/foo"]),
     # ("asset", "download", ["asset", "org/user"]),
-    ("asset", "download", ["asset", "org/user", "download", "--tag-name", "1.0.0"]),
-    ("asset", "download", ["asset", "org/user", "download", "--tag-name", "1.0.0", "--pattern", "dist/foo"]),
+    ("asset", "download", ["asset", "org/user", "download", "1.0.0"]),
+    ("asset", "download", ["asset", "org/user", "download", "1.0.0", "dist/foo"]),
     ("asset", "delete", ["asset", "org/user", "delete", "1.0.0", "*foo*"]),
     ("asset", "delete", ["asset", "org/user", "delete", "1.0.0", "*foo*", "--keep-pattern", "*bar*"]),
     # # ref
