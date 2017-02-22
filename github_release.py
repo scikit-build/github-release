@@ -437,8 +437,8 @@ gh_asset_upload.description = {
 }
 
 
-def gh_asset_erase(repo_name, tag_name, pattern,
-                   keep_pattern=None, dry_run=False, verbose=False):
+def gh_asset_delete(repo_name, tag_name, pattern,
+                    keep_pattern=None, dry_run=False, verbose=False):
     release = get_release_info(repo_name, tag_name)
     # List of assets
     excluded_assets = {}
@@ -489,7 +489,7 @@ def gh_asset_erase(repo_name, tag_name, pattern,
         print("")
 
 
-gh_asset_erase.description = {
+gh_asset_delete.description = {
   "help": "Delete selected release assets",
   "params": [
       "repo_name", "tag_name", "pattern",
@@ -755,8 +755,8 @@ def gh_release(argv=None, prog=None):
 ASSET_COMMANDS = {
     'upload': gh_asset_upload,
     'download': gh_asset_download,
-    'delete': gh_asset_erase,
-    'erase': gh_asset_erase,
+    'delete': gh_asset_delete,
+    'erase': gh_asset_delete,
 }
 
 

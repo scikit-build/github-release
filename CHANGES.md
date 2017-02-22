@@ -15,10 +15,18 @@ CLI
 
   * Change ``--target_commitish`` into ``--target-commitish``.
 
+Python API
+----------
+
+* Backward incompatible changes:
+
+  * Rename ``gh_asset_erase`` into ``gh_asset_delete``.
+
 Testing
 -------
 
 * Add test checking that expected command line arguments do not cause failure.
+
 
 1.5.0
 =====
