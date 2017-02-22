@@ -1,3 +1,36 @@
+Next Release
+============
+
+CLI
+---
+
+* Fix asset download command argument parsing. `tag_name` and `pattern` are
+  effectively optional positional arguments.
+
+* Deprecate asset erase command. It doesn't show up in the help and usage
+  output. It will be removed in version 1.6.0.
+
+* Backward incompatible changes:
+
+  * Consistently accept ``--keep-pattern`` instead of ``--keep_pattern``.
+
+  * Change ``--tag_name`` into ``--tag-name``.
+
+  * Change ``--target_commitish`` into ``--target-commitish``.
+
+Python API
+----------
+
+* Backward incompatible changes:
+
+  * Rename ``gh_asset_erase`` into ``gh_asset_delete``.
+
+Testing
+-------
+
+* Add test checking that expected command line arguments do not cause failure.
+
+
 1.5.0
 =====
 

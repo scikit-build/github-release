@@ -220,11 +220,12 @@ def gh_release_create(repo_name, tag_name, name=None,
 gh_release_create.description = {
   "help": "Create a release",
   "params": [
-      "repo_name", "tag_name", "name",
-      "publish", "prerelease", "target_commitish"
+      "repo_name", "tag_name", "--name",
+      "--publish", "--prerelease", "--target-commitish"
   ],
   "optional_params": {
-      "name": str, "publish": bool, "prerelease": bool, "target_commitish": str
+      "--name": str, "--publish": bool,
+      "--prerelease": bool, "--target-commitish": str
   }
 }
 
@@ -247,15 +248,16 @@ gh_release_edit.description = {
   "help": "Edit a release",
   "params": [
       "repo_name", "current_tag_name",
-      "tag_name", "target_commitish", "name", "body", "draft", "prerelease",
-      "dry-run", "verbose"
+      "--tag-name", "--target-commitish", "--name", "--body",
+      "--draft", "--prerelease",
+      "--dry-run", "--verbose"
   ],
   "optional_params": {
-      "tag_name": str, "target_commitish": str,
-      "name": str, "body": str, "draft": bool, "prerelease": bool,
-      "dry-run": bool, "verbose": bool
+      "--tag-name": str, "--target-commitish": str,
+      "--name": str, "--body": str, "--draft": bool, "--prerelease": bool,
+      "--dry-run": bool, "--verbose": bool
   },
-  "optional_params_defaults": {"draft": None, "prerelease": None}
+  "optional_params_defaults": {"--draft": None, "--prerelease": None}
 }
 
 
@@ -285,8 +287,10 @@ def gh_release_delete(repo_name, pattern, keep_pattern=None,
 
 gh_release_delete.description = {
   "help": "Delete selected releases",
-  "params": ["repo_name", "pattern", "keep_pattern", "dry-run", "verbose"],
-  "optional_params": {"keep_pattern": str, "dry-run": bool, "verbose": bool}
+  "params": ["repo_name", "pattern",
+             "--keep-pattern", "--dry-run", "--verbose"],
+  "optional_params": {"--keep-pattern": str,
+                      "--dry-run": bool, "--verbose": bool}
 }
 
 
@@ -296,8 +300,8 @@ def gh_release_publish(repo_name, tag_name, prerelease=False):
 
 gh_release_publish.description = {
   "help": "Publish a release setting draft to 'False'",
-  "params": ["repo_name", "tag_name", "prerelease"],
-  "optional_params": {"prerelease": bool}
+  "params": ["repo_name", "tag_name", "--prerelease"],
+  "optional_params": {"--prerelease": bool}
 }
 
 
@@ -308,8 +312,8 @@ def gh_release_unpublish(repo_name, tag_name, prerelease=False):
 
 gh_release_unpublish.description = {
   "help": "Unpublish a release setting draft to 'True'",
-  "params": ["repo_name", "tag_name", "prerelease"],
-  "optional_params": {"prerelease": bool}
+  "params": ["repo_name", "tag_name", "--prerelease"],
+  "optional_params": {"--prerelease": bool}
 }
 
 
@@ -428,13 +432,13 @@ def gh_asset_upload(repo_name, tag_name, pattern, dry_run=False, verbose=False):
 
 gh_asset_upload.description = {
   "help": "Upload release assets",
-  "params": ["repo_name", "tag_name", "pattern", "dry-run", "verbose"],
-  "optional_params": {"dry-run": bool, "verbose": bool}
+  "params": ["repo_name", "tag_name", "pattern", "--dry-run", "--verbose"],
+  "optional_params": {"--dry-run": bool, "--verbose": bool}
 }
 
 
-def gh_asset_erase(repo_name, tag_name, pattern,
-                   keep_pattern=None, dry_run=False, verbose=False):
+def gh_asset_delete(repo_name, tag_name, pattern,
+                    keep_pattern=None, dry_run=False, verbose=False):
     release = get_release_info(repo_name, tag_name)
     # List of assets
     excluded_assets = {}
@@ -485,13 +489,14 @@ def gh_asset_erase(repo_name, tag_name, pattern,
         print("")
 
 
-gh_asset_erase.description = {
+gh_asset_delete.description = {
   "help": "Delete selected release assets",
   "params": [
-      "repo_name", "tag_name", "pattern", "keep-pattern",
-      "dry-run", "verbose"
+      "repo_name", "tag_name", "pattern",
+      "--keep-pattern", "--dry-run", "--verbose"
   ],
-  "optional_params": {"keep-pattern": str, "dry-run": bool, "verbose": bool}
+  "optional_params": {
+      "--keep-pattern": str, "--dry-run": bool, "--verbose": bool}
 }
 
 
@@ -588,8 +593,8 @@ def gh_ref_list(repo_name, tags=None,  pattern=None, verbose=False):
 
 gh_ref_list.description = {
   "help": "List all references",
-  "params": ["repo_name", "tags", "pattern", "verbose"],
-  "optional_params": {"tags": bool, "pattern": str, "verbose": bool}
+  "params": ["repo_name", "--tags", "--pattern", "--verbose"],
+  "optional_params": {"--tags": bool, "--pattern": str, "--verbose": bool}
 }
 
 
@@ -635,10 +640,10 @@ def gh_ref_delete(repo_name, pattern, keep_pattern=None, tags=False,
 
 gh_ref_delete.description = {
   "help": "Delete selected references",
-  "params": ["repo_name", "pattern", "keep_pattern", "tags",
-             "dry-run", "verbose"],
-  "optional_params": {"keep_pattern": str, "tags": bool,
-                      "dry-run": bool, "verbose": bool}
+  "params": ["repo_name", "pattern", "--keep-pattern", "--tags",
+             "--dry-run", "--verbose"],
+  "optional_params": {"--keep-pattern": str, "--tags": bool,
+                      "--dry-run": bool, "--verbose": bool}
 }
 
 
@@ -695,15 +700,18 @@ def _gh_parser(commands, prog=None):
         for cmd_param in cmd_params:
             if cmd_param == "repo_name":  # parameter already specified above
                 continue
-            if cmd_param not in cmd_opt_params.keys():
-                cmd_parser.add_argument(cmd_param, type=str)
+            if cmd_param[:2] != "--":
+                params = {"type": str}
+                if cmd_param in cmd_opt_params:
+                    params = {"nargs": "?"}
+                cmd_parser.add_argument(cmd_param, **params)
             else:
                 if cmd_opt_params[cmd_param] is bool:
                     cmd_parser.add_argument(
-                        "--%s" % cmd_param, action='store_true')
+                        cmd_param, action='store_true')
                 else:
                     cmd_parser.add_argument(
-                        "--%s" % cmd_param, type=cmd_opt_params[cmd_param])
+                        cmd_param, type=cmd_opt_params[cmd_param])
         cmd_parser.set_defaults(func=func)
 
         # Set defaults
@@ -747,13 +755,17 @@ def gh_release(argv=None, prog=None):
 ASSET_COMMANDS = {
     'upload': gh_asset_upload,
     'download': gh_asset_download,
-    'delete': gh_asset_erase,
-    'erase': gh_asset_erase,
+    'delete': gh_asset_delete,
 }
 
 
 @handle_http_error
 def gh_asset(argv=None, prog=None):
+    # 1.6.0 (deprecated): Remove this bloc
+    if argv is None:
+        argv = sys.argv[1:]
+    if len(argv) > 1 and argv[1] == "erase":
+        argv[1] = "delete"
     return _gh_parse_arguments(ASSET_COMMANDS, argv, prog)
 
 

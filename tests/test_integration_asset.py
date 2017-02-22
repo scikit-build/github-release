@@ -74,7 +74,7 @@ def test_delete_simple(tmpdir):
     with push_dir(tmpdir):
         ghr.gh_asset_upload(REPO_NAME, tag_name, "dist/*")
 
-    ghr.gh_asset_erase(REPO_NAME, tag_name, "asset_2_foo")
+    ghr.gh_asset_delete(REPO_NAME, tag_name, "asset_2_foo")
 
     assert (check_releases([
         {"tag_name": tag_name,
@@ -85,7 +85,7 @@ def test_delete_simple(tmpdir):
          ]}
     ]))
 
-    ghr.gh_asset_erase(REPO_NAME, tag_name, "asset_*_bar")
+    ghr.gh_asset_delete(REPO_NAME, tag_name, "asset_*_bar")
 
     assert (check_releases([
         {"tag_name": tag_name,
@@ -139,9 +139,9 @@ awesome-{tag_name}.dev2-cp36-cp36m-win_amd64.whl
          ]}
     ]))
 
-    ghr.gh_asset_erase(REPO_NAME, tag_name,
-                       "awesome*manylinux1*",
-                       keep_pattern="awesome*dev2*")
+    ghr.gh_asset_delete(REPO_NAME, tag_name,
+                        "awesome*manylinux1*",
+                        keep_pattern="awesome*dev2*")
 
     assert (check_releases([
         {"tag_name": tag_name,

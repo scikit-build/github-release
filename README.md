@@ -162,14 +162,14 @@ It understands the following commands:
   --name NAME
   --publish
   --prerelease
-  --target_commitish TARGET_COMMITISH
+  --target-commitish TARGET_COMMITISH
 ```
 
 * edit:
 
 ```bash
-  --tag_name TAG_NAME
-  --target_commitish TARGET_COMMITISH
+  --tag-name TAG_NAME
+  --target-commitish TARGET_COMMITISH
   --name NAME
   --body BODY
   --draft
@@ -245,7 +245,7 @@ It understands the following commands:
 |-----------|----------------------------------------|--------------------------------------------|
 | create    | ref sha                                | create reference (e.g heads/foo, tags/foo) |
 | list      | [--tags] [--pattern PATTERN]           | list all references                        |
-| delete    | pattern [--tags] [--keep_pattern KEEP_PATTERN] | delete selected references                 |
+| delete    | pattern [--tags] [--keep-pattern KEEP_PATTERN] | delete selected references                 |
 
 
 # using the module
