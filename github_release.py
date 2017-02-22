@@ -756,12 +756,16 @@ ASSET_COMMANDS = {
     'upload': gh_asset_upload,
     'download': gh_asset_download,
     'delete': gh_asset_delete,
-    'erase': gh_asset_delete,
 }
 
 
 @handle_http_error
 def gh_asset(argv=None, prog=None):
+    # 1.6.0 (deprecated): Remove this bloc
+    if argv is None:
+        argv = sys.argv[1:]
+    if len(argv) > 1 and argv[1] == "erase":
+        argv[1] = "delete"
     return _gh_parse_arguments(ASSET_COMMANDS, argv, prog)
 
 
