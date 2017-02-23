@@ -170,6 +170,10 @@ def test_edit_release_type(from_release_type, to_release_type):
         'release': {"draft": False, "prerelease": False}
     }
 
+    if from_release_type == to_release_type:
+        pytest.skip("from_release_type is identical to "
+                    "to_release_type: %s" % to_release_type)
+
     from_params = cases[from_release_type]
     to_params = cases[to_release_type]
 
