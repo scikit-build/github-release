@@ -17,8 +17,6 @@ from . import (
 import github_release as ghr
 
 
-@git_user_email_required
-@git_user_name_required
 @github_token_required
 @integration_test_repo_name_required
 @pytest.mark.parametrize("release_type", ['draft', 'prerelease', 'release'])
@@ -109,8 +107,6 @@ def test_edit_target_commitish(gh_src_dir, release_type):
         ]))
 
 
-@git_user_email_required
-@git_user_name_required
 @github_token_required
 @integration_test_repo_name_required
 @pytest.mark.parametrize("release_type", ['draft', 'prerelease', 'release'])
@@ -153,8 +149,6 @@ def test_edit_name_and_body(release_type):
     ]))
 
 
-@git_user_email_required
-@git_user_name_required
 @github_token_required
 @integration_test_repo_name_required
 @pytest.mark.parametrize("from_release_type",
@@ -169,6 +163,10 @@ def test_edit_release_type(from_release_type, to_release_type):
         'prerelease': {"draft": False, "prerelease": True},
         'release': {"draft": False, "prerelease": False}
     }
+
+    if from_release_type == to_release_type:
+        pytest.skip("from_release_type is identical to "
+                    "to_release_type: %s" % to_release_type)
 
     from_params = cases[from_release_type]
     to_params = cases[to_release_type]

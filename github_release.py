@@ -9,6 +9,7 @@ import json
 import os
 import sys
 import tempfile
+import time
 
 
 from functools import wraps
@@ -25,7 +26,16 @@ def _request(*args, **kwargs):
     with_auth = kwargs.pop("with_auth", True)
     if "GITHUB_TOKEN" in os.environ and with_auth:
         kwargs["auth"] = (os.environ["GITHUB_TOKEN"], 'x-oauth-basic')
-    return request(*args, **kwargs)
+    for _ in range(3):
+        response = request(*args, **kwargs)
+        is_travis = os.getenv("TRAVIS",  None) is not None
+        if is_travis and 400 <= response.status_code < 500:
+            print("Retrying in 1s (%s Client Error: %s for url: %s)" % (
+                response.status_code, response.reason, response.url))
+            time.sleep(1)
+            continue
+        break
+    return response
 
 
 #

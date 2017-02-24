@@ -12,11 +12,15 @@ matrix:
       python: "3.5.2"
       env:
         - INTEGRATION_TEST_REPO_NAME=jcfr/github-release-test-py3
+        - INTEGRATION_TEST_GIT_USER_NAME=github-release-bot
+        - INTEGRATION_TEST_GIT_USER_EMAIL=github-release-bot@users.noreply.github.com
 
     - os: linux
       python: "2.7"
       env:
         - INTEGRATION_TEST_REPO_NAME=jcfr/github-release-test-py2
+        - INTEGRATION_TEST_GIT_USER_NAME=github-release-bot
+        - INTEGRATION_TEST_GIT_USER_EMAIL=github-release-bot@users.noreply.github.com
 
 install:
   - pip install -r requirements-dev.txt
@@ -27,4 +31,4 @@ script:
 
 env:
   global:
-    secure: "xFFztlppLk1bDtry9CVZonQtFgYlaAZBUACFSY1xxuGgcM3GC6JdiYHaaqekeF1wY2dcbIAVrfYI1rXmA9V7kLLpM5nv6Pd38rIP0wlKbxoHsOaWIsJMZPgjie7eQLRyRyKD5xaZpWsqumlIs3LkwaWrPqpiQq2bhzZWpoFniZAKDAaptSuoo3TZ2zO4xxXpQFys8iZwBmRbcaHXCh5HFMmR9TMDudfCLs4WKLykwc3rFyVQNU+Ai1Hn/RUdqEac3rFpFGbi6k2GWNM+DmCjKwNdWlOZT/ttP8J8pY1QPxn32rbPiB2WS8LVMrHJ5BKuCU0drfeWN/zzcEDTVX+QlX1G+1Yb1VorkeSOAffH8Lop3XLn63FsaFJh+TwlRzcHPcGE0CGz7xZT3BQcuNVUd1ugZC7Tni87dxwCUkx+owneW1xfjQNbbT/5ZhAAxHJjqWnAXjH9HuHI/+Pdp/vALmkVJgI/PipJQ+KzWfTWu7rWX8IRHYNkH+FwuDFcBJrRU008vEZm3YqErZ+Hn0GLpAuIK4Pa6j3YJPr+DXnk0dqHhM5YL9QOyajGBBQhN2KrEfu4/gPpaIEHdF1m8EiDA5FNDeODBdaruigNqrE4d47Cyd/oLMAUx3PCRs7w672JAbKWHXyOwk8IEYoTuQcQjEp9cY5ZQzzP+vk0c8OS5Kw="
+    secure: "UmvFiDNU+3kc7Rc3xd/1LsIQx+qhF+Zb1GVxLtLJlBCGUQNX1Fb65sgZSJEEEbIXiM6pxKk3yWAa1bORJhqbhPKMex7y2pTEs8LR7kIyYLrJiMo/wd3jfQhwyJyoRMk8RntDt2dLA1iTRFfb7bjmxf8TAxCf8HgtV1R4ZEJSsdDW3afNjf1sPX7QRKToLWp80dWB9z/Co4LvMVakQiCQmmO7VowpSwSep33CzyHhB4Iy9Q6earakM7zt1kOI0+MTvooCKjvmVIvMI3FgUao2yM9lzORa2QRKifHmgjVkkbmNwBkjk9dgUpRpk/CocHJsSFKG4Pm/hHMjKg1gqNWVtzM1jiCRANEVsfA2er6879xdQr2d4xZ4RCnb/w39+/30+yuxr53x6+pW9qaz2AmqTm249CCjMkTyotXlX6TYQSb7wOiYGV2bQhXFIq5XCjRLlhEPUHWRbJ8QRPIP+aTqMaHY7TH7RDfV3hg09Twd1d361z+qIsTlahhWatffEjiQxIP63PiSTmCjNHm7MZcIdSf7kwOaPjvHSXXRieYZtNXP9v0wQ/pUK/ESPfgxq9RVcZKpWDQ5dToKCc4P8szL08DZU0p/QqK5F8EO1o3h0CzGbVRUsZPixmzJ9t2f2fFn8oTdPuvMak/L9QSGCaKSDtOnAyTuEVXfwMlzQoHbguc="
