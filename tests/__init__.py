@@ -12,6 +12,7 @@ from contextlib import contextmanager
 from functools import reduce
 
 import pytest
+import requests
 
 from github_release import get_releases, gh_ref_delete, gh_release_delete
 
@@ -157,7 +158,21 @@ def read_version_file():
 
 def clear_github_release_and_tags():
     # Remove release and tags from GitHub
-    gh_release_delete(REPO_NAME, "*")
+    for release in get_releases(REPO_NAME):
+        try:
+            gh_release_delete(REPO_NAME, release["tag_name"])
+        except requests.exceptions.HTTPError as exc_info:
+            response = exc_info.response
+            if 400 <= response.status_code < 500:
+                print("Ignoring (%s Client Error: %s for url: %s)" % (
+                    response.status_code, response.reason, response.url))
+                continue
+            if sys.version_info[0] >= 3:
+                raise exc_info.with_traceback(sys.exc_info()[2])
+            else:
+                raise (sys.exc_info()[0],
+                    sys.exc_info()[1], sys.exc_info()[2])  # noqa: E999
+
     gh_ref_delete(REPO_NAME, "*", tags=True)
 
 
