@@ -274,7 +274,8 @@ gh_release_edit.description = {
 def gh_release_delete(repo_name, pattern, keep_pattern=None,
                       dry_run=False, verbose=False):
     releases = get_releases(repo_name)
-    deleted = False
+    candidates = []
+    # Get list of candidate releases
     for release in releases:
         if not fnmatch.fnmatch(release['tag_name'], pattern):
             if verbose:
@@ -284,6 +285,9 @@ def gh_release_delete(repo_name, pattern, keep_pattern=None,
         if keep_pattern is not None:
             if fnmatch.fnmatch(release['tag_name'], keep_pattern):
                 continue
+        candidates.append(release['tag_name'])
+    for tag_name in candidates:
+        release = get_release(repo_name, tag_name)
         print('deleting release {0}'.format(release['tag_name']))
         if dry_run:
             continue
@@ -291,8 +295,7 @@ def gh_release_delete(repo_name, pattern, keep_pattern=None,
                + '/repos/{0}/releases/{1}'.format(repo_name, release['id']))
         response = _request('DELETE', url)
         response.raise_for_status()
-        deleted = True
-    return deleted
+    return len(candidates) > 0
 
 
 gh_release_delete.description = {
