@@ -21,19 +21,24 @@ This project aims at streamlining the distribution of
 from the command-line:
 
 ```bash
-# create a release
-$ githubrelease release jcfr/sandbox create 1.0.0 --prerelease
+# create a prerelease
+$ githubrelease release jcfr/sandbox create --prerelease 1.0.0
 
 # upload assets
 $ githubrelease asset jcfr/sandbox 1.0.0 "dist/*"
+
+# publish a release
+$ githubrelease release jcfr/sandbox --publish 1.0.0
+
+# or all together: create with custom name, upload, publish
+$ githubrelease release jcfr/sandbox create 2.0.0 --publish --name "Awesome 2.0" "dist/*"
 ```
 
 ... or even from python:
 
 ```python
-from github_release import gh_release_create, gh_asset_upload
-gh_release_create("jcfr/sandbox ", "1.0.0", prerelease=True)
-gh_asset_upload("jcfr/sandbox", "1.0.0", "dist/*")
+from github_release import gh_release_create
+gh_release_create("jcfr/sandbox ", "2.0.0", publish=True, name="Awesome 2.0", asset_pattern="dist/*")
 ```
 
 *That said, if you are looking for a full fledged GitHub API support for
@@ -219,16 +224,16 @@ For the `download` command, you also need to specify a tagname of `'*'`
 
 ```bash
 # upload all example-project-1.4* files in /home/me/pkg
-githubrelease asset octocat/example-project upload 1.4 '/home/me/pkg/example-project-1.4*'
+$ githubrelease asset octocat/example-project upload 1.4 '/home/me/pkg/example-project-1.4*'
 
 # download all wheels from all releases
-githubrelease asset octocat/example-project download '*' '*.whl'
+$ githubrelease asset octocat/example-project download '*' '*.whl'
 
 # download all files from release 1.4
-githubrelease asset octocat/example-project download 1.4
+$ githubrelease asset octocat/example-project download 1.4
 
 # download all files from example-project
-githubrelease asset octocat/example-project download
+$ githubrelease asset octocat/example-project download
 ```
 
 ## ``ref`` command

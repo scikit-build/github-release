@@ -206,7 +206,8 @@ gh_release_info.description = {
 
 
 def gh_release_create(repo_name, tag_name, name=None,
-                      publish=False, prerelease=False, target_commitish=None):
+                      publish=False, prerelease=False,
+                      target_commitish=None, asset_pattern=None):
     if get_release(repo_name, tag_name) is not None:
         print('release %s: already exists\n' % tag_name)
         return
@@ -225,17 +226,19 @@ def gh_release_create(repo_name, tag_name, name=None,
           headers={'Content-Type': 'application/json'})
     response.raise_for_status()
     print_release_info(response.json(), title="created '%s' release" % tag_name)
+    gh_asset_upload(repo_name, tag_name, asset_pattern)
 
 
 gh_release_create.description = {
   "help": "Create a release",
   "params": [
       "repo_name", "tag_name", "--name",
-      "--publish", "--prerelease", "--target-commitish"
+      "--publish", "--prerelease", "--target-commitish", "asset_pattern"
   ],
   "optional_params": {
       "--name": str, "--publish": bool,
-      "--prerelease": bool, "--target-commitish": str
+      "--prerelease": bool, "--target-commitish": str,
+      "asset_pattern": str
   }
 }
 
@@ -716,7 +719,8 @@ def _gh_parser(commands, prog=None):
             if cmd_param[:2] != "--":
                 params = {"type": str}
                 if cmd_param in cmd_opt_params:
-                    params = {"nargs": "?"}
+                    is_list = cmd_opt_params[cmd_param] is list
+                    params = {"nargs": "*" if is_list else "?"}
                 cmd_parser.add_argument(cmd_param, **params)
             else:
                 if cmd_opt_params[cmd_param] is bool:
