@@ -57,16 +57,17 @@ from . import push_argv
 ])
 def test_cli_arguments(mocker, command, action, args):
 
-    command_dict = getattr(ghr, "%s_COMMANDS" % command.upper())
-
-    def mocked_action(*action_args, **action_kwargs):
+    class AbortTestException(Exception):
         pass
 
-    mocked_action.description = command_dict[action].description
-    mocker.patch.dict(command_dict, {action: mocked_action})
+    def mocked_request(*request_args, **request_kwargs):
+        raise AbortTestException
+
+    mocker.patch("github_release._request", new=mocked_request)
     args.insert(0, action)
     args.insert(0, "org/user")
     args.insert(0, command)
     args.insert(0, "githubrelease")
     with push_argv(args):
-        ghr.main()
+        with pytest.raises(AbortTestException):
+            ghr.main()

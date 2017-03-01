@@ -2,12 +2,10 @@
 
 from __future__ import print_function
 
-import argparse
 import fnmatch
 import glob
 import json
 import os
-import sys
 import tempfile
 import time
 
@@ -15,6 +13,7 @@ import time
 from functools import wraps
 from pprint import pprint
 
+import click
 import requests
 from requests import request
 
@@ -36,6 +35,80 @@ def _request(*args, **kwargs):
             continue
         break
     return response
+
+
+def handle_http_error(func):
+    @wraps(func)
+    def with_error_handling(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except requests.exceptions.HTTPError as e:
+            print('Error sending {0} to {1}'.format(
+                e.request.method, e.request.url))
+            print('<', e.request.method, e.request.path_url)
+            for k in sorted(e.request.headers.keys()):
+                print('<', k, ':', e.request.headers[k])
+            if e.request.body:
+                print('<')
+                print('<', repr(e.request.body[:35]),
+                      '(total {0} bytes of data)'.format(len(e.request.body)))
+            print('')
+            print('>', e.response.status_code, e.response.reason)
+            for k in sorted(e.response.headers.keys()):
+                print('>', k.title(), ':', e.response.headers[k])
+            if e.response.content:
+                print('>')
+                print('>', repr(e.response.content[:35]),
+                      '(total {0} bytes of data)'.format(
+                          len(e.response.content)))
+            return 1
+    return with_error_handling
+
+
+@click.group()
+def main():
+    """A CLI to easily manage GitHub releases, assets and references."""
+    pass
+
+
+@main.group("release")
+@click.argument('repo_name', metavar="REPOSITORY")
+@click.pass_context
+@handle_http_error
+def gh_release(ctx, repo_name):
+    """Manage releases (list, create, delete, ...) for
+    REPOSITORY (e.g jcfr/sandbox)
+    """
+    ctx.obj = repo_name
+
+
+# 1.6.0 (deprecated): Remove this bloc
+class AssetGroup(click.Group):
+    def get_command(self, ctx, cmd_name):
+        cmd_name = "delete" if cmd_name == "erase" else cmd_name
+        return click.Group.get_command(self, ctx, cmd_name)
+
+
+@main.group("asset", cls=AssetGroup)
+@click.argument('repo_name', metavar="REPOSITORY")
+@click.pass_context
+@handle_http_error
+def gh_asset(ctx, repo_name):
+    """Manage release assets (upload, download, ...) for
+    REPOSITORY (e.g jcfr/sandbox)
+    """
+    ctx.obj = repo_name
+
+
+@main.group("ref")
+@click.argument('repo_name', metavar="REPOSITORY")
+@click.pass_context
+@handle_http_error
+def gh_ref(ctx, repo_name):
+    """Manage references (list, create, delete, ...) for
+    REPOSITORY (e.g jcfr/sandbox)
+    """
+    ctx.obj = repo_name
 
 
 #
@@ -184,30 +257,38 @@ def get_asset_info(repo_name, tag_name, filename):
                         'release with tag_name {1}'.format(filename, tag_name))
 
 
-def gh_release_list(repo_name, verbose=True):
-    return get_releases(repo_name, verbose=verbose)
+@gh_release.command("list")
+@click.pass_obj
+def _cli_release_list(repo_name):
+    """List releases"""
+    return get_releases(repo_name, verbose=True)
 
 
-gh_release_list.description = {
-  "help": "List releases",
-  "params": ["repo_name"]
-}
-
-
-def gh_release_info(repo_name, tag_name):
+@gh_release.command("info")
+@click.argument("tag_name")
+@click.pass_obj
+def _cli_release_info(repo_name, tag_name):
+    """Get release description"""
     release = get_release_info(repo_name, tag_name)
     print_release_info(release)
 
 
-gh_release_info.description = {
-  "help": "Get release description",
-  "params": ["repo_name", "tag_name"]
-}
+@gh_release.command("create")
+@click.argument("tag_name")
+@click.argument("asset_pattern", required=False)
+@click.option("--name")
+@click.option("--publish", is_flag=True, default=False)
+@click.option("--prerelease", is_flag=True, default=False)
+@click.option("--target-commitish")
+@click.pass_obj
+def cli_release_create(*args, **kwargs):
+    """Create a release"""
+    gh_release_create(*args, **kwargs)
 
 
-def gh_release_create(repo_name, tag_name, name=None,
+def gh_release_create(repo_name, tag_name, asset_pattern=None, name=None,
                       publish=False, prerelease=False,
-                      target_commitish=None, asset_pattern=None):
+                      target_commitish=None):
     if get_release(repo_name, tag_name) is not None:
         print('release %s: already exists\n' % tag_name)
         return
@@ -226,21 +307,24 @@ def gh_release_create(repo_name, tag_name, name=None,
           headers={'Content-Type': 'application/json'})
     response.raise_for_status()
     print_release_info(response.json(), title="created '%s' release" % tag_name)
-    gh_asset_upload(repo_name, tag_name, asset_pattern)
+    if asset_pattern is not None:
+        gh_asset_upload(repo_name, tag_name, asset_pattern)
 
 
-gh_release_create.description = {
-  "help": "Create a release",
-  "params": [
-      "repo_name", "tag_name", "--name",
-      "--publish", "--prerelease", "--target-commitish", "asset_pattern"
-  ],
-  "optional_params": {
-      "--name": str, "--publish": bool,
-      "--prerelease": bool, "--target-commitish": str,
-      "asset_pattern": str
-  }
-}
+@gh_release.command("edit")
+@click.argument("current_tag_name")
+@click.option("--tag-name", default=None)
+@click.option("--target-commitish", default=None)
+@click.option("--name", default=None)
+@click.option("--body", default=None)
+@click.option("--draft", is_flag=True, default=None)
+@click.option("--prerelease", is_flag=True, default=None)
+@click.option("--dry-run", is_flag=True, default=False)
+@click.option("--verbose", is_flag=True, default=False)
+@click.pass_obj
+def _cli_release_edit(*args, **kwargs):
+    """Edit a release"""
+    gh_release_edit(*args, **kwargs)
 
 
 def gh_release_edit(repo_name, current_tag_name,
@@ -257,21 +341,15 @@ def gh_release_edit(repo_name, current_tag_name,
     patch_release(repo_name, current_tag_name, **attributes)
 
 
-gh_release_edit.description = {
-  "help": "Edit a release",
-  "params": [
-      "repo_name", "current_tag_name",
-      "--tag-name", "--target-commitish", "--name", "--body",
-      "--draft", "--prerelease",
-      "--dry-run", "--verbose"
-  ],
-  "optional_params": {
-      "--tag-name": str, "--target-commitish": str,
-      "--name": str, "--body": str, "--draft": bool, "--prerelease": bool,
-      "--dry-run": bool, "--verbose": bool
-  },
-  "optional_params_defaults": {"--draft": None, "--prerelease": None}
-}
+@gh_release.command("delete")
+@click.argument("pattern")
+@click.option("--keep-pattern")
+@click.option("--dry-run", is_flag=True, default=False)
+@click.option("--verbose", is_flag=True, default=False)
+@click.pass_obj
+def _cli_release_delete(*args, **kwargs):
+    """Delete selected release"""
+    gh_release_delete(*args, **kwargs)
 
 
 def gh_release_delete(repo_name, pattern, keep_pattern=None,
@@ -301,24 +379,26 @@ def gh_release_delete(repo_name, pattern, keep_pattern=None,
     return len(candidates) > 0
 
 
-gh_release_delete.description = {
-  "help": "Delete selected releases",
-  "params": ["repo_name", "pattern",
-             "--keep-pattern", "--dry-run", "--verbose"],
-  "optional_params": {"--keep-pattern": str,
-                      "--dry-run": bool, "--verbose": bool}
-}
+@gh_release.command("publish")
+@click.argument("tag_name")
+@click.option("--prerelease", is_flag=True, default=False)
+@click.pass_obj
+def _cli_release_publish(*args, **kwargs):
+    """Publish a release setting draft to 'False'"""
+    gh_release_publish(*args, **kwargs)
 
 
 def gh_release_publish(repo_name, tag_name, prerelease=False):
     patch_release(repo_name, tag_name, draft=False, prerelease=prerelease)
 
 
-gh_release_publish.description = {
-  "help": "Publish a release setting draft to 'False'",
-  "params": ["repo_name", "tag_name", "--prerelease"],
-  "optional_params": {"--prerelease": bool}
-}
+@gh_release.command("unpublish")
+@click.argument("tag_name")
+@click.option("--prerelease", is_flag=True, default=False)
+@click.pass_obj
+def _cli_release_unpublish(*args, **kwargs):
+    """Unpublish a release setting draft to 'True'"""
+    gh_release_unpublish(*args, **kwargs)
 
 
 def gh_release_unpublish(repo_name, tag_name, prerelease=False):
@@ -326,11 +406,12 @@ def gh_release_unpublish(repo_name, tag_name, prerelease=False):
     patch_release(repo_name, tag_name, draft=draft, prerelease=prerelease)
 
 
-gh_release_unpublish.description = {
-  "help": "Unpublish a release setting draft to 'True'",
-  "params": ["repo_name", "tag_name", "--prerelease"],
-  "optional_params": {"--prerelease": bool}
-}
+@gh_release.command("release-notes")
+@click.argument("tag_name")
+@click.pass_obj
+def _cli_release_notes(*args, **kwargs):
+    """Set release notes"""
+    gh_release_notes(*args, **kwargs)
 
 
 def gh_release_notes(repo_name, tag_name):
@@ -353,21 +434,13 @@ def gh_release_notes(repo_name, tag_name):
         os.remove(filename)
 
 
-gh_release_notes.description = {
-  "help": "Set release notes",
-  "params": ["repo_name", "tag_name"]
-}
-
-
-def gh_release_debug(repo_name, tag_name):
+@gh_release.command("debug")
+@click.argument("tag_name")
+@click.pass_obj
+def _cli_release_debug(repo_name, tag_name):
+    """Print release detailed information"""
     release = get_release_info(repo_name, tag_name)
     pprint(release)
-
-
-gh_release_debug.description = {
-  "help": "Print release detailed information",
-  "params": ["repo_name", "tag_name"]
-}
 
 
 #
@@ -383,6 +456,15 @@ def print_asset_info(i, asset, indent=""):
     print(indent + "URL       : {browser_download_url}".format(i=i, **asset))
     print(indent + "Downloads : {download_count}".format(i=i, **asset))
     print("")
+
+
+@gh_asset.command("upload")
+@click.argument("tag_name")
+@click.argument("pattern")
+@click.pass_obj
+def _cli_asset_upload(*args, **kwargs):
+    """Upload release assets"""
+    gh_asset_upload(*args, **kwargs)
 
 
 def gh_asset_upload(repo_name, tag_name, pattern, dry_run=False, verbose=False):
@@ -446,11 +528,16 @@ def gh_asset_upload(repo_name, tag_name, pattern, dry_run=False, verbose=False):
         print("")
 
 
-gh_asset_upload.description = {
-  "help": "Upload release assets",
-  "params": ["repo_name", "tag_name", "pattern", "--dry-run", "--verbose"],
-  "optional_params": {"--dry-run": bool, "--verbose": bool}
-}
+@gh_asset.command("delete")
+@click.argument("tag_name")
+@click.argument("pattern")
+@click.option("--keep-pattern", default=None)
+@click.option("--dry-run", is_flag=True, default=False)
+@click.option("--verbose", is_flag=True, default=False)
+@click.pass_obj
+def _cli_asset_delete(*args, **kwargs):
+    """Delete selected release assets"""
+    gh_asset_delete(*args, **kwargs)
 
 
 def gh_asset_delete(repo_name, tag_name, pattern,
@@ -505,15 +592,13 @@ def gh_asset_delete(repo_name, tag_name, pattern,
         print("")
 
 
-gh_asset_delete.description = {
-  "help": "Delete selected release assets",
-  "params": [
-      "repo_name", "tag_name", "pattern",
-      "--keep-pattern", "--dry-run", "--verbose"
-  ],
-  "optional_params": {
-      "--keep-pattern": str, "--dry-run": bool, "--verbose": bool}
-}
+@gh_asset.command("download")
+@click.argument("tag_name")
+@click.argument("pattern", required=False)
+@click.pass_obj
+def _cli_asset_download(*args, **kwargs):
+    """Download release assets"""
+    gh_asset_download(*args, **kwargs)
 
 
 def gh_asset_download(repo_name, tag_name=None, pattern=None):
@@ -549,13 +634,6 @@ def gh_asset_download(repo_name, tag_name=None, pattern=None):
                 f.write(response.content)
             downloaded += 1
     return downloaded
-
-
-gh_asset_download.description = {
-  "help": "Download release assets",
-  "params": ["repo_name", "tag_name", "pattern"],
-  "optional_params": {"tag_name": str, "pattern": str}
-}
 
 
 #
@@ -598,6 +676,16 @@ def get_refs(repo_name, tags=None, pattern=None):
     return filtered_data
 
 
+@gh_ref.command("list")
+@click.option("--tags", is_flag=True, default=False)
+@click.option("--pattern", default=None)
+@click.option("--verbose", is_flag=True, default=False)
+@click.pass_obj
+def _cli_ref_list(*args, **kwargs):
+    """List all references"""
+    gh_ref_list(*args, **kwargs)
+
+
 def gh_ref_list(repo_name, tags=None,  pattern=None, verbose=False):
     refs = get_refs(repo_name, tags=tags, pattern=pattern)
     sorted_refs = sorted(refs, key=lambda r: r['ref'])
@@ -607,11 +695,13 @@ def gh_ref_list(repo_name, tags=None,  pattern=None, verbose=False):
         list(map(lambda ref: print(ref['ref']), sorted_refs))
 
 
-gh_ref_list.description = {
-  "help": "List all references",
-  "params": ["repo_name", "--tags", "--pattern", "--verbose"],
-  "optional_params": {"--tags": bool, "--pattern": str, "--verbose": bool}
-}
+@gh_ref.command("create")
+@click.argument("reference")
+@click.argument("sha")
+@click.pass_obj
+def _cli_ref_create(*args, **kwargs):
+    """Create reference (e.g heads/foo, tags/foo)"""
+    gh_ref_create(*args, **kwargs)
 
 
 def gh_ref_create(repo_name, reference, sha):
@@ -627,10 +717,16 @@ def gh_ref_create(repo_name, reference, sha):
     print_ref_info(response.json())
 
 
-gh_ref_create.description = {
-  "help": "Create reference (e.g heads/foo, tags/foo)",
-  "params": ["repo_name", "reference", "sha"]
-}
+@gh_ref.command("delete")
+@click.argument("pattern")
+@click.option("--keep-pattern", default=None)
+@click.option("--tags", is_flag=True, default=False)
+@click.option("--dry-run", is_flag=True, default=False)
+@click.option("--verbose", is_flag=True, default=False)
+@click.pass_obj
+def _cli_ref_delete(*args, **kwargs):
+    """Delete selected references"""
+    gh_ref_delete(*args, **kwargs)
 
 
 def gh_ref_delete(repo_name, pattern, keep_pattern=None, tags=False,
@@ -652,190 +748,6 @@ def gh_ref_delete(repo_name, pattern, keep_pattern=None, tags=False,
             'DELETE',
             GITHUB_API + '/repos/{0}/git/{1}'.format(repo_name, ref['ref']))
         response.raise_for_status()
-
-
-gh_ref_delete.description = {
-  "help": "Delete selected references",
-  "params": ["repo_name", "pattern", "--keep-pattern", "--tags",
-             "--dry-run", "--verbose"],
-  "optional_params": {"--keep-pattern": str, "--tags": bool,
-                      "--dry-run": bool, "--verbose": bool}
-}
-
-
-#
-# Decorators
-#
-
-def handle_http_error(func):
-    @wraps(func)
-    def with_error_handling(*args, **kwargs):
-        try:
-            return func(*args, **kwargs)
-        except requests.exceptions.HTTPError as e:
-            print('Error sending {0} to {1}'.format(
-                e.request.method, e.request.url))
-            print('<', e.request.method, e.request.path_url)
-            for k in sorted(e.request.headers.keys()):
-                print('<', k, ':', e.request.headers[k])
-            if e.request.body:
-                print('<')
-                print('<', repr(e.request.body[:35]),
-                      '(total {0} bytes of data)'.format(len(e.request.body)))
-            print('')
-            print('>', e.response.status_code, e.response.reason)
-            for k in sorted(e.response.headers.keys()):
-                print('>', k.title(), ':', e.response.headers[k])
-            if e.response.content:
-                print('>')
-                print('>', repr(e.response.content[:35]),
-                      '(total {0} bytes of data)'.format(
-                          len(e.response.content)))
-            return 1
-    return with_error_handling
-
-
-#
-# Command line parsing helpers
-#
-
-def _gh_parser(commands, prog=None):
-    parser = argparse.ArgumentParser(description=__doc__, prog=prog)
-    parser.add_argument(
-        "repo_name", type=str, metavar="REPOSITORY",
-        help="Github repository to update (e.g jcfr/sandbox)"
-    )
-    subparsers = parser.add_subparsers(help='sub-command help')
-
-    for command in commands:
-        func = commands[command]
-        cmd_help = func.description["help"]
-        cmd_params = list(func.description["params"])
-        cmd_opt_params = func.description.get("optional_params", {})
-        cmd_parser = subparsers.add_parser(command, help=cmd_help)
-        for cmd_param in cmd_params:
-            if cmd_param == "repo_name":  # parameter already specified above
-                continue
-            if cmd_param[:2] != "--":
-                params = {"type": str}
-                if cmd_param in cmd_opt_params:
-                    is_list = cmd_opt_params[cmd_param] is list
-                    params = {"nargs": "*" if is_list else "?"}
-                cmd_parser.add_argument(cmd_param, **params)
-            else:
-                if cmd_opt_params[cmd_param] is bool:
-                    cmd_parser.add_argument(
-                        cmd_param, action='store_true')
-                else:
-                    cmd_parser.add_argument(
-                        cmd_param, type=cmd_opt_params[cmd_param])
-        cmd_parser.set_defaults(func=func)
-
-        # Set defaults
-        params_defaults = func.description.get("optional_params_defaults", {})
-        cmd_parser.set_defaults(**params_defaults)
-
-    return parser
-
-
-def _gh_parse_arguments(commands, argv, prog):
-    args = _gh_parser(commands, prog).parse_args(argv)
-    func = args.func
-    return func(*[
-        vars(args).get(arg_name.replace("-", "_"), None)
-        for arg_name in func.description["params"]
-        ])
-
-
-#
-# Command line parsers
-#
-
-RELEASE_COMMANDS = {
-    'list': gh_release_list,
-    'info': gh_release_info,
-    'create': gh_release_create,
-    'edit': gh_release_edit,
-    'delete': gh_release_delete,
-    'publish': gh_release_publish,
-    'unpublish': gh_release_unpublish,
-    'release-notes': gh_release_notes,
-    'debug': gh_release_debug
-}
-
-
-@handle_http_error
-def gh_release(argv=None, prog=None):
-    return _gh_parse_arguments(RELEASE_COMMANDS, argv, prog)
-
-
-ASSET_COMMANDS = {
-    'upload': gh_asset_upload,
-    'download': gh_asset_download,
-    'delete': gh_asset_delete,
-}
-
-
-@handle_http_error
-def gh_asset(argv=None, prog=None):
-    # 1.6.0 (deprecated): Remove this bloc
-    if argv is None:
-        argv = sys.argv[1:]
-    if len(argv) > 1 and argv[1] == "erase":
-        argv[1] = "delete"
-    return _gh_parse_arguments(ASSET_COMMANDS, argv, prog)
-
-
-REF_COMMANDS = {
-    'list': gh_ref_list,
-    'create': gh_ref_create,
-    'delete': gh_ref_delete
-}
-
-
-@handle_http_error
-def gh_ref(argv=None, prog=None):
-    return _gh_parse_arguments(REF_COMMANDS, argv, prog)
-
-
-PROG = os.path.basename(sys.argv[0])
-HELP = """Usage: {prog} COMMAND REPOSITORY [OPTIONS]
-       {prog} [-h]
-
-A CLI to easily manage GitHub releases, assets and references.
-
-Commands:
-    release    Manage releases (list, create, delete, ...)
-    asset      Manage release assets (upload, download, ...)
-    ref        Manage references (list, create, delete, ...)
-
-Repository:    Repository to update (e.g octocat/hello-worId)
-
-Options:
-    -h, --help       Show this help message and exit
-
-Run '{prog} COMMAND --help' for more information on a command.
-""".format(prog=PROG)
-
-
-def main():
-
-    if (len(sys.argv) == 1
-            or "--help" in sys.argv[:2]
-            or "-h" in sys.argv[:2]):
-        print(HELP)
-        exit(0)
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument('command', default=None)
-
-    args = parser.parse_args(sys.argv[1:2])
-    if "gh_%s" % args.command not in globals():
-        print("%s: '%s' is not a githubrelease command." % (PROG, args.command))
-        print("See '%s --help'" % PROG)
-        exit(1)
-    globals()["gh_%s" % args.command](
-        sys.argv[2:], "%s %s" % (PROG, args.command))
 
 
 #

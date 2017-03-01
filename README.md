@@ -27,10 +27,10 @@ $ githubrelease release jcfr/sandbox create --prerelease 1.0.0
 # upload assets
 $ githubrelease asset jcfr/sandbox 1.0.0 "dist/*"
 
-# publish a release
+# publish the release
 $ githubrelease release jcfr/sandbox --publish 1.0.0
 
-# or all together: create with custom name, upload, publish
+# or all together: create with custom name, upload assets, and publish
 $ githubrelease release jcfr/sandbox create 2.0.0 --publish --name "Awesome 2.0" "dist/*"
 ```
 
