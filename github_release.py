@@ -275,7 +275,7 @@ def _cli_release_info(repo_name, tag_name):
 
 @gh_release.command("create")
 @click.argument("tag_name")
-@click.argument("asset_pattern", required=False)
+@click.argument("asset_pattern", nargs=-1)
 @click.option("--name")
 @click.option("--publish", is_flag=True, default=False)
 @click.option("--prerelease", is_flag=True, default=False)
@@ -475,13 +475,15 @@ def gh_asset_upload(repo_name, tag_name, pattern, dry_run=False, verbose=False):
     if "{" in upload_url:
         upload_url = upload_url[:upload_url.index("{")]
 
-    if type(pattern) is list:
+    if type(pattern) in [list, tuple]:
         filenames = []
         for package in pattern:
             filenames.extend(glob.glob(package))
         set(filenames)
-    else:
+    elif pattern:
         filenames = glob.glob(pattern)
+    else:
+        filenames = []
 
     if len(filenames) > 0:
         print("uploading '%s' release asset(s) "

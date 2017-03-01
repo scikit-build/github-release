@@ -168,6 +168,7 @@ It understands the following commands:
   --publish
   --prerelease
   --target-commitish TARGET_COMMITISH
+  [ASSET_PATTERN]...
 ```
 
 * edit:
