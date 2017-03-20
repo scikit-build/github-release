@@ -45,7 +45,9 @@ Testing
 
 * Add test checking that expected command line arguments do not cause failure.
 
-* Completely ignore 4xx errors associated with ``clear_github_release_and_tags``.
+* Update ``clear_github_release_and_tags`` to wait 0.5s and give a chance to GitHub to
+  process previous requests. Doing so avoid to get ``405 Client Error: Not Allowed``
+  errors.
 
 * Relocate test repositories under [github-release-bot](https://github.com/github-release-bot) user.
 
