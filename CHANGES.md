@@ -18,6 +18,17 @@ CLI
 
   * Change ``--target_commitish`` into ``--target-commitish``.
 
+Features (CLI and Python API)
+-----------------------------
+
+* ``release`` command:
+
+  * ``create``:
+
+    * Support upload of arbitrary number of assets on release creation.
+
+    * Support ``--dry-run``.
+
 Python API
 ----------
 
@@ -25,10 +36,16 @@ Python API
 
   * Rename ``gh_asset_erase`` into ``gh_asset_delete``.
 
+* Internal
+
+  * Simplify code using [click](http://pocco-click.readthedocs.io) for argument parsing.
+
 Testing
 -------
 
 * Add test checking that expected command line arguments do not cause failure.
+
+* Completely ignore 4xx errors associated with ``clear_github_release_and_tags``.
 
 
 1.5.0
