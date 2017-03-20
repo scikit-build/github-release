@@ -40,12 +40,12 @@ Python API
 
   * Simplify code using [click](http://pocco-click.readthedocs.io) for argument parsing.
 
+  * Ignore 403, 405 and 422 HTTP error associated with ``gh_release_delete`` and ``gh_ref_delete``.
+
 Testing
 -------
 
 * Add test checking that expected command line arguments do not cause failure.
-
-* Completely ignore 4xx errors associated with ``clear_github_release_and_tags``.
 
 
 1.5.0
