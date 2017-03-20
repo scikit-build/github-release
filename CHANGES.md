@@ -47,6 +47,7 @@ Testing
 
 * Completely ignore 4xx errors associated with ``clear_github_release_and_tags``.
 
+* Relocate test repositories under [github-release-bot](https://github.com/github-release-bot) user.
 
 1.5.0
 =====
