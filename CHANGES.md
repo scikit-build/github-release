@@ -40,6 +40,10 @@ Python API
 
   * Simplify code using [click](http://pocco-click.readthedocs.io) for argument parsing.
 
+  * Improve robustness of ``target_commitish`` update in ``patch_release`` method
+    by creating a temporary branch of the form `<tag_name>-tmp-XXXXXX` where `XXXXXX`
+    is a random string.
+
 Testing
 -------
 

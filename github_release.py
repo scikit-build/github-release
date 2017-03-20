@@ -6,6 +6,8 @@ import fnmatch
 import glob
 import json
 import os
+import random
+import string
 import tempfile
 import time
 
@@ -170,8 +172,8 @@ def _update_release_sha(repo_name, tag_name, new_release_sha, dry_run):
 
     Since updating a tag commit is not directly possible, this function
     does the following steps:
-    * set the release tag to ``<tag_name>-tmp`` and associate it
-      with ``new_release_sha``.
+    * set the release tag to ``<tag_name>-tmp-XXXXXX`` (where `XXXXXX` is a
+      random string) and associate it with ``new_release_sha``.
     * delete tag ``refs/tags/<tag_name>``.
     * update the release tag to ``<tag_name>`` and associate it
       with ``new_release_sha``.
@@ -185,7 +187,10 @@ def _update_release_sha(repo_name, tag_name, new_release_sha, dry_run):
     previous_release_sha = refs[0]["object"]["sha"]
     if previous_release_sha == new_release_sha:
         return
-    tmp_tag_name = tag_name + "-tmp"
+    suffix = ''.join(
+        random.SystemRandom().choice(string.ascii_uppercase + string.digits)
+        for _ in range(6))
+    tmp_tag_name = tag_name + "-tmp-%s" % suffix
     patch_release(repo_name, tag_name,
                   tag_name=tmp_tag_name,
                   target_commitish=new_release_sha,
