@@ -279,6 +279,7 @@ def _cli_release_info(repo_name, tag_name):
 @click.option("--name")
 @click.option("--publish", is_flag=True, default=False)
 @click.option("--prerelease", is_flag=True, default=False)
+@click.option("--dry-run", is_flag=True, default=False)
 @click.option("--target-commitish")
 @click.pass_obj
 def cli_release_create(*args, **kwargs):
@@ -288,7 +289,7 @@ def cli_release_create(*args, **kwargs):
 
 def gh_release_create(repo_name, tag_name, asset_pattern=None, name=None,
                       publish=False, prerelease=False,
-                      target_commitish=None):
+                      target_commitish=None, dry_run=False):
     if get_release(repo_name, tag_name) is not None:
         print('release %s: already exists\n' % tag_name)
         return
@@ -301,14 +302,18 @@ def gh_release_create(repo_name, tag_name, asset_pattern=None, name=None,
         data["name"] = name
     if target_commitish is not None:
         data["target_commitish"] = target_commitish
-    response = _request(
-          'POST', GITHUB_API + '/repos/{0}/releases'.format(repo_name),
-          data=json.dumps(data),
-          headers={'Content-Type': 'application/json'})
-    response.raise_for_status()
-    print_release_info(response.json(), title="created '%s' release" % tag_name)
+    if not dry_run:
+        response = _request(
+              'POST', GITHUB_API + '/repos/{0}/releases'.format(repo_name),
+              data=json.dumps(data),
+              headers={'Content-Type': 'application/json'})
+        response.raise_for_status()
+        print_release_info(response.json(),
+                           title="created '%s' release" % tag_name)
+    else:
+        print("created '%s' release (dry_run)" % tag_name)
     if asset_pattern is not None:
-        gh_asset_upload(repo_name, tag_name, asset_pattern)
+        gh_asset_upload(repo_name, tag_name, asset_pattern, dry_run=dry_run)
 
 
 @gh_release.command("edit")
@@ -468,7 +473,10 @@ def _cli_asset_upload(*args, **kwargs):
 
 
 def gh_asset_upload(repo_name, tag_name, pattern, dry_run=False, verbose=False):
-    release = get_release_info(repo_name, tag_name)
+    if not dry_run:
+        release = get_release_info(repo_name, tag_name)
+    else:
+        release = {"assets": [], "upload_url": "unknown"}
     uploaded = False
     already_uploaded = False
     upload_url = release["upload_url"]
