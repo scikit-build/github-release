@@ -1,5 +1,7 @@
 
 import os
+import random
+import string
 
 import pytest
 
@@ -38,3 +40,14 @@ def gh_src_dir(tmpdir_factory):
         reset()
 
         return srcdir
+
+
+@pytest.fixture(scope='function')
+def release_name(request):
+    prefix = "".join(token[0] for token in request.node.originalname.split("_"))
+
+    rnd = ''.join(
+        random.SystemRandom().choice(string.ascii_uppercase + string.digits)
+        for _ in range(6))
+
+    return "%s-%s-0.1.0" % (prefix, rnd)

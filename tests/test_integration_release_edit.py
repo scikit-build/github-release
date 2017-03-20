@@ -20,7 +20,7 @@ import github_release as ghr
 @github_token_required
 @integration_test_repo_name_required
 @pytest.mark.parametrize("release_type", ['draft', 'prerelease', 'release'])
-def test_edit_tag_name(release_type):
+def test_edit_tag_name(release_name, release_type):
     clear_github_release_and_tags()
 
     cases = {
@@ -33,22 +33,23 @@ def test_edit_tag_name(release_type):
 
     # Create release
     ghr.gh_release_create(
-        REPO_NAME, "0.1.0",
+        REPO_NAME, release_name,
         prerelease=params["prerelease"],
         publish=not params["prerelease"] and not params["draft"]
     )
 
     assert (check_releases([
-        {"tag_name": "0.1.0",
+        {"tag_name": release_name,
          "draft": params["draft"],
          "prerelease": params["prerelease"]}
     ]))
 
     # Edit release
-    ghr.gh_release_edit(REPO_NAME, "0.1.0", tag_name="0.1.0-edited")
+    ghr.gh_release_edit(
+        REPO_NAME, release_name, tag_name="%s-edited" % release_name)
 
     assert (check_releases([
-        {"tag_name": "0.1.0-edited",
+        {"tag_name": "%s-edited" % release_name,
          "draft": params["draft"],
          "prerelease": params["prerelease"]},
     ]))
@@ -59,7 +60,7 @@ def test_edit_tag_name(release_type):
 @github_token_required
 @integration_test_repo_name_required
 @pytest.mark.parametrize("release_type", ['draft', 'prerelease', 'release'])
-def test_edit_target_commitish(gh_src_dir, release_type):
+def test_edit_target_commitish(gh_src_dir, release_name, release_type):
     cases = {
         'draft': {"draft": True, "prerelease": False},
         'prerelease': {"draft": False, "prerelease": True},
@@ -74,7 +75,7 @@ def test_edit_target_commitish(gh_src_dir, release_type):
 
         # Create release
         ghr.gh_release_create(
-            REPO_NAME, "0.1.0",
+            REPO_NAME, release_name,
             prerelease=params["prerelease"],
             publish=not params["prerelease"] and not params["draft"]
         )
@@ -83,7 +84,7 @@ def test_edit_target_commitish(gh_src_dir, release_type):
         run("git fetch origin --tags")
 
         assert (check_releases([
-            {"tag_name": "0.1.0",
+            {"tag_name": release_name,
              "draft": params["draft"],
              "prerelease": params["prerelease"],
              "tag_date": "20170103"}
@@ -91,7 +92,7 @@ def test_edit_target_commitish(gh_src_dir, release_type):
 
         # Edit release
         ghr.gh_release_edit(
-            REPO_NAME, "0.1.0",
+            REPO_NAME, release_name,
             target_commitish=sha
         )
 
@@ -99,7 +100,7 @@ def test_edit_target_commitish(gh_src_dir, release_type):
         run("git fetch origin --tags")
 
         assert (check_releases([
-            {"tag_name": "0.1.0",
+            {"tag_name": release_name,
              "draft": params["draft"],
              "prerelease": params["prerelease"],
              "tag_date": "20170102"
@@ -110,7 +111,7 @@ def test_edit_target_commitish(gh_src_dir, release_type):
 @github_token_required
 @integration_test_repo_name_required
 @pytest.mark.parametrize("release_type", ['draft', 'prerelease', 'release'])
-def test_edit_name_and_body(release_type):
+def test_edit_name_and_body(release_name, release_type):
     clear_github_release_and_tags()
 
     cases = {
@@ -123,25 +124,25 @@ def test_edit_name_and_body(release_type):
 
     # Create release
     ghr.gh_release_create(
-        REPO_NAME, "0.1.0",
+        REPO_NAME, release_name,
         prerelease=params["prerelease"],
         publish=not params["prerelease"] and not params["draft"]
     )
 
     assert (check_releases([
-        {"tag_name": "0.1.0",
+        {"tag_name": release_name,
          "draft": params["draft"],
          "prerelease": params["prerelease"]}
     ]))
 
     # Edit release
     ghr.gh_release_edit(
-        REPO_NAME, "0.1.0",
+        REPO_NAME, release_name,
         name="name-edited", body="body-edited"
     )
 
     assert (check_releases([
-        {"tag_name": "0.1.0",
+        {"tag_name": release_name,
          "draft": params["draft"],
          "prerelease": params["prerelease"],
          "name": "name-edited",
@@ -155,7 +156,7 @@ def test_edit_name_and_body(release_type):
                          ['draft', 'prerelease', 'release'])
 @pytest.mark.parametrize("to_release_type",
                          ['draft', 'prerelease', 'release'])
-def test_edit_release_type(from_release_type, to_release_type):
+def test_edit_release_type(release_name, from_release_type, to_release_type):
     clear_github_release_and_tags()
 
     cases = {
@@ -173,24 +174,24 @@ def test_edit_release_type(from_release_type, to_release_type):
 
     # Create release
     ghr.gh_release_create(
-        REPO_NAME, "0.1.0",
+        REPO_NAME, release_name,
         prerelease=from_params["prerelease"],
         publish=not from_params["prerelease"] and not from_params["draft"]
     )
 
     assert (check_releases([
-        {"tag_name": "0.1.0",
+        {"tag_name": release_name,
          "draft": from_params["draft"],
          "prerelease": from_params["prerelease"]}
     ]))
 
     # Edit release
     ghr.gh_release_edit(
-        REPO_NAME, "0.1.0", **to_params
+        REPO_NAME, release_name, **to_params
     )
 
     assert (check_releases([
-        {"tag_name": "0.1.0",
+        {"tag_name": release_name,
          "draft": to_params["draft"],
          "prerelease": to_params["prerelease"]},
     ]))
