@@ -11,14 +11,14 @@ matrix:
     - os: linux
       python: "3.5.2"
       env:
-        - INTEGRATION_TEST_REPO_NAME=jcfr/github-release-test-py3
+        - INTEGRATION_TEST_REPO_NAME=github-release-bot/github-release-test-py3
         - INTEGRATION_TEST_GIT_USER_NAME=github-release-bot
         - INTEGRATION_TEST_GIT_USER_EMAIL=github-release-bot@users.noreply.github.com
 
     - os: linux
       python: "2.7"
       env:
-        - INTEGRATION_TEST_REPO_NAME=jcfr/github-release-test-py2
+        - INTEGRATION_TEST_REPO_NAME=github-release-bot/github-release-test-py2
         - INTEGRATION_TEST_GIT_USER_NAME=github-release-bot
         - INTEGRATION_TEST_GIT_USER_EMAIL=github-release-bot@users.noreply.github.com
 
