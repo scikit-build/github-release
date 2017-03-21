@@ -65,6 +65,25 @@ def handle_http_error(func):
     return with_error_handling
 
 
+def ignore_http_4xx_error(func):
+    @wraps(func)
+    def with_error_ignore(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except requests.exceptions.HTTPError as exc_info:
+            response = exc_info.response
+            if response.status_code in [
+                403,  # Client Error: Forbidden for url
+                405,  # Client Error: Not Allowed for url
+                422,  # Client Error: Unprocessable Entity for url
+            ]:
+                print("Ignoring (%s Client Error: %s for url: %s)" % (
+                    response.status_code, response.reason, response.url))
+                return True
+            raise
+    return with_error_ignore
+
+
 @click.group()
 def main():
     """A CLI to easily manage GitHub releases, assets and references."""
@@ -357,6 +376,7 @@ def _cli_release_delete(*args, **kwargs):
     gh_release_delete(*args, **kwargs)
 
 
+@ignore_http_4xx_error
 def gh_release_delete(repo_name, pattern, keep_pattern=None,
                       dry_run=False, verbose=False):
     releases = get_releases(repo_name)
@@ -739,6 +759,7 @@ def _cli_ref_delete(*args, **kwargs):
     gh_ref_delete(*args, **kwargs)
 
 
+@ignore_http_4xx_error
 def gh_ref_delete(repo_name, pattern, keep_pattern=None, tags=False,
                   dry_run=False, verbose=False):
     refs = get_refs(repo_name, tags=tags)
