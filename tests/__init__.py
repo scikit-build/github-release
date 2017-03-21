@@ -157,23 +157,29 @@ def read_version_file():
 #
 
 def clear_github_release_and_tags():
-    # Remove release and tags from GitHub
-    for release in get_releases(REPO_NAME):
+
+    @contextmanager
+    def _ignore_4xx_errors():
         try:
-            gh_release_delete(REPO_NAME, release["tag_name"])
+            yield
         except requests.exceptions.HTTPError as exc_info:
             response = exc_info.response
             if 400 <= response.status_code < 500:
                 print("Ignoring (%s Client Error: %s for url: %s)" % (
                     response.status_code, response.reason, response.url))
-                continue
+                return
             if sys.version_info[0] >= 3:
                 raise exc_info.with_traceback(sys.exc_info()[2])
             else:
                 raise (sys.exc_info()[0],
                     sys.exc_info()[1], sys.exc_info()[2])  # noqa: E999
 
-    gh_ref_delete(REPO_NAME, "*", tags=True)
+    # Remove release and tags from GitHub
+    for release in get_releases(REPO_NAME):
+        with _ignore_4xx_errors():
+            gh_release_delete(REPO_NAME, release["tag_name"])
+    with _ignore_4xx_errors():
+        gh_ref_delete(REPO_NAME, "*", tags=True)
 
 
 #
