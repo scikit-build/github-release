@@ -65,6 +65,20 @@ def handle_http_error(func):
     return with_error_handling
 
 
+def _check_for_credentials(func):
+    @wraps(func)
+    def with_check_for_credentials(*args, **kwargs):
+        has_github_token = "GITHUB_TOKEN" in os.environ
+        has_netrc = requests.utils.get_netrc_auth(GITHUB_API)
+        if not has_github_token and not has_netrc:
+            raise EnvironmentError(
+                "This command requires credentials set using GITHUB_TOKEN "
+                "env. variable or netrc file. For more details, "
+                "see https://github.com/j0057/github-release#configuring")
+        return func(*args, **kwargs)
+    return with_check_for_credentials
+
+
 @click.group()
 def main():
     """A CLI to easily manage GitHub releases, assets and references."""
@@ -287,6 +301,7 @@ def cli_release_create(*args, **kwargs):
     gh_release_create(*args, **kwargs)
 
 
+@_check_for_credentials
 def gh_release_create(repo_name, tag_name, asset_pattern=None, name=None,
                       publish=False, prerelease=False,
                       target_commitish=None, dry_run=False):
@@ -332,6 +347,7 @@ def _cli_release_edit(*args, **kwargs):
     gh_release_edit(*args, **kwargs)
 
 
+@_check_for_credentials
 def gh_release_edit(repo_name, current_tag_name,
                     tag_name=None, target_commitish=None, name=None,
                     body=None,
@@ -357,6 +373,7 @@ def _cli_release_delete(*args, **kwargs):
     gh_release_delete(*args, **kwargs)
 
 
+@_check_for_credentials
 def gh_release_delete(repo_name, pattern, keep_pattern=None,
                       dry_run=False, verbose=False):
     releases = get_releases(repo_name)
@@ -393,6 +410,7 @@ def _cli_release_publish(*args, **kwargs):
     gh_release_publish(*args, **kwargs)
 
 
+@_check_for_credentials
 def gh_release_publish(repo_name, tag_name, prerelease=False):
     patch_release(repo_name, tag_name, draft=False, prerelease=prerelease)
 
@@ -406,6 +424,7 @@ def _cli_release_unpublish(*args, **kwargs):
     gh_release_unpublish(*args, **kwargs)
 
 
+@_check_for_credentials
 def gh_release_unpublish(repo_name, tag_name, prerelease=False):
     draft = not prerelease
     patch_release(repo_name, tag_name, draft=draft, prerelease=prerelease)
@@ -419,6 +438,7 @@ def _cli_release_notes(*args, **kwargs):
     gh_release_notes(*args, **kwargs)
 
 
+@_check_for_credentials
 def gh_release_notes(repo_name, tag_name):
     release = get_release_info(repo_name, tag_name)
     (_, filename) = tempfile.mkstemp(suffix='.md')
@@ -472,6 +492,7 @@ def _cli_asset_upload(*args, **kwargs):
     gh_asset_upload(*args, **kwargs)
 
 
+@_check_for_credentials
 def gh_asset_upload(repo_name, tag_name, pattern, dry_run=False, verbose=False):
     if not dry_run:
         release = get_release_info(repo_name, tag_name)
@@ -482,6 +503,17 @@ def gh_asset_upload(repo_name, tag_name, pattern, dry_run=False, verbose=False):
     upload_url = release["upload_url"]
     if "{" in upload_url:
         upload_url = upload_url[:upload_url.index("{")]
+
+    # Raise exception if no token is specified AND netrc file is found
+    # BUT only api.github.com is specified. See #17
+    has_github_token = "GITHUB_TOKEN" in os.environ
+    has_netrc = requests.utils.get_netrc_auth(GITHUB_API)
+    if not has_github_token and has_netrc:
+        if requests.utils.get_netrc_auth(upload_url) is None:
+            raise EnvironmentError(
+                "Found netrc file but upload URL is missing. "
+                "For more details, "
+                "see https://github.com/j0057/github-release#configuring")
 
     if type(pattern) in [list, tuple]:
         filenames = []
@@ -550,6 +582,7 @@ def _cli_asset_delete(*args, **kwargs):
     gh_asset_delete(*args, **kwargs)
 
 
+@_check_for_credentials
 def gh_asset_delete(repo_name, tag_name, pattern,
                     keep_pattern=None, dry_run=False, verbose=False):
     release = get_release_info(repo_name, tag_name)
@@ -714,6 +747,7 @@ def _cli_ref_create(*args, **kwargs):
     gh_ref_create(*args, **kwargs)
 
 
+@_check_for_credentials
 def gh_ref_create(repo_name, reference, sha):
     data = {
         'ref': "refs/%s" % reference,
@@ -739,6 +773,7 @@ def _cli_ref_delete(*args, **kwargs):
     gh_ref_delete(*args, **kwargs)
 
 
+@_check_for_credentials
 def gh_ref_delete(repo_name, pattern, keep_pattern=None, tags=False,
                   dry_run=False, verbose=False):
     refs = get_refs(repo_name, tags=tags)
