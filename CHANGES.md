@@ -21,6 +21,10 @@ CLI
 Features (CLI and Python API)
 -----------------------------
 
+* Check that credentials (either `GITHUB_TOKEN` environment variable or `netrc` file)
+  are properly set for commands requiring them. Thanks [@rwols](https://github.com/rwols)
+  for suggesting the change. See [PR #17](https://github.com/j0057/github-release/pull/17).
+
 * ``release`` command:
 
   * ``create``:
