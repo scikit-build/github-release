@@ -492,14 +492,54 @@ def _cli_asset_upload(*args, **kwargs):
     gh_asset_upload(*args, **kwargs)
 
 
+def _upload_release_file(
+        release, upload_url, filename, verbose=False, dry_run=False):
+    print("  uploading %s" % filename)
+    already_uploaded = False
+    uploaded = False
+    basename = os.path.basename(filename)
+    # Skip if an asset with same name has already been uploaded
+    # Trying to upload would give a HTTP error 422
+    download_url = None
+    for asset in release["assets"]:
+        if asset["name"] == basename:
+            download_url = asset["browser_download_url"]
+            break
+    if download_url:
+        already_uploaded = True
+        print("  skipping (asset with same name already exists)")
+        print("  download_url: %s" % download_url)
+        print("")
+        return already_uploaded, uploaded
+    if dry_run:
+        uploaded = True
+        print("  download_url: Unknown (dry_run)")
+        print("")
+        return already_uploaded, uploaded
+    # Attempt upload
+    with open(filename, 'rb') as f:
+        url = '{0}?name={1}'.format(upload_url, basename)
+        if verbose:
+            print("  upload_url: %s" % url)
+        response = _request(
+            'POST', url,
+            headers={'Content-Type': 'application/octet-stream'},
+            data=f.read())
+        response.raise_for_status()
+        asset = response.json()
+        print("  download_url: %s" % asset["browser_download_url"])
+        print("")
+        uploaded = True
+        return already_uploaded, uploaded
+
+
 @_check_for_credentials
 def gh_asset_upload(repo_name, tag_name, pattern, dry_run=False, verbose=False):
     if not dry_run:
         release = get_release_info(repo_name, tag_name)
     else:
         release = {"assets": [], "upload_url": "unknown"}
-    uploaded = False
-    already_uploaded = False
+
     upload_url = release["upload_url"]
     if "{" in upload_url:
         upload_url = upload_url[:upload_url.index("{")]
@@ -529,41 +569,13 @@ def gh_asset_upload(repo_name, tag_name, pattern, dry_run=False, verbose=False):
         print("uploading '%s' release asset(s) "
               "(found %s):" % (tag_name, len(filenames)))
 
+    uploaded = False
+    already_uploaded = False
+
     for filename in filenames:
-        print("  uploading %s" % filename)
-        basename = os.path.basename(filename)
-        # Skip if an asset with same name has already been uploaded
-        # Trying to upload would give a HTTP error 422
-        download_url = None
-        for asset in release["assets"]:
-            if asset["name"] == basename:
-                download_url = asset["browser_download_url"]
-                break
-        if download_url:
-            already_uploaded = True
-            print("  skipping (asset with same name already exists)")
-            print("  download_url: %s" % download_url)
-            print("")
-            continue
-        if dry_run:
-            uploaded = True
-            print("  download_url: Unknown (dry_run)")
-            print("")
-            continue
-        # Attempt upload
-        with open(filename, 'rb') as f:
-            url = '{0}?name={1}'.format(upload_url, basename)
-            if verbose:
-                print("  upload_url: %s" % url)
-            response = _request(
-                'POST', url,
-                headers={'Content-Type': 'application/octet-stream'},
-                data=f.read())
-            response.raise_for_status()
-            asset = response.json()
-            print("  download_url: %s" % asset["browser_download_url"])
-            print("")
-            uploaded = True
+        already_uploaded, uploaded = _upload_release_file(
+            release, upload_url, filename, verbose, dry_run)
+
     if not uploaded and not already_uploaded:
         print("skipping upload of '%s' release assets ("
               "no files match pattern(s): %s)" % (tag_name, pattern))
