@@ -641,7 +641,7 @@ def gh_asset_upload(repo_name, tag_name, pattern, dry_run=False, verbose=False):
         filenames = []
         for package in pattern:
             filenames.extend(glob.glob(package))
-        set(filenames)
+        filenames = set(filenames)
     elif pattern:
         filenames = glob.glob(pattern)
     else:
