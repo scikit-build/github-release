@@ -74,7 +74,7 @@ Python, you should probably look into project like [github3py](http://github3py.
   * for selectively deleting assets
 * allow deleting individual asset from a release
 * authentication through `GITHUB_TOKEN` environment variable or `~/.netrc` file
-* pure python, no dependencies beside of [requests](http://docs.python-requests.org/en/master/)
+* pure python, only depends on [requests](http://docs.python-requests.org/en/master/) and [click](http://pocco-click.readthedocs.io)
 
 
 # installing
