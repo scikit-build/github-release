@@ -9,7 +9,7 @@ from . import push_argv
 @pytest.mark.parametrize("options, command,action,args", [
     # asset
     # ([], "asset", "upload", []),
-    ([], "asset", "upload", ["1.0.0", "dist/foo"]),
+    ([], "asset", "upload", ["1.0.0", "dist/foo", "dist/bar"]),
     (["--no-progress"], "asset", "upload", ["1.0.0", "dist/foo"]),
     (["--progress"], "asset", "upload", ["1.0.0", "dist/foo"]),
     # ([], "asset", "download", []),

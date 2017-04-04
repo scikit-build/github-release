@@ -10,6 +10,10 @@ CLI
 * Fix asset download command argument parsing. `tag_name` and `pattern` are
   effectively optional positional arguments.
 
+* ``asset`` command:
+
+  * ``upload``: Support upload of multiple files or globing patterns
+
 * Deprecate asset erase command. It doesn't show up in the help and usage
   output. It will be removed in version 1.6.0.
 
