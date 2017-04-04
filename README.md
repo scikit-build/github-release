@@ -72,9 +72,10 @@ Python, you should probably look into project like [github3py](http://github3py.
 * support wildcard expression (or list of wildcard expressions):
   * for upload or download of assets
   * for selectively deleting assets
+* report download and upload progress
 * allow deleting individual asset from a release
 * authentication through `GITHUB_TOKEN` environment variable or `~/.netrc` file
-* pure python, no dependencies beside of [requests](http://docs.python-requests.org/en/master/)
+* pure python, only depends on [requests](http://docs.python-requests.org/en/master/) and [click](http://pocco-click.readthedocs.io)
 
 
 # installing
@@ -118,20 +119,18 @@ The package installs one CLI named ``githubrelease``.
 
 ```bash
 $ githubrelease 
-Usage: githubrelease COMMAND REPOSITORY [OPTIONS]
-       githubrelease [-h]
+Usage: githubrelease [OPTIONS] COMMAND [ARGS]...
 
-A CLI to easily manage GitHub releases, assets and references.
-
-Commands:
-    release    Manage releases (list, create, delete, ...)
-    asset      Manage release assets (upload, download, ...)
-    ref        Manage references (list, create, delete, ...)
-
-Repository:    Repository to update (e.g octocat/hello-worId)
+  A CLI to easily manage GitHub releases, assets and references.
 
 Options:
-    -h, --help       Show this help message and exit
+  --progress / --no-progress  Display progress bar (default: yes).
+  --help                      Show this message and exit.
+
+Commands:
+  asset    Manage release assets (upload, download, ...)...
+  ref      Manage references (list, create, delete, ...)...
+  release  Manage releases (list, create, delete, ...)...
 
 Run 'githubrelease COMMAND --help' for more information on a command.
 ```

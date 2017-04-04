@@ -6,8 +6,10 @@ import fnmatch
 import glob
 import json
 import os
+import sys
 import tempfile
 import time
+import types
 
 
 from functools import wraps
@@ -19,6 +21,34 @@ from requests import request
 
 
 GITHUB_API = "https://api.github.com"
+
+REQ_BUFFER_SIZE = 65536  # Chunk size when iterating a download body
+
+
+class _NoopProgressReporter(object):
+    reportProgress = False
+
+    def __init__(self, label='', length=0):
+        self.label = label
+        self.length = length
+
+    def update(self, chunk_size):
+        pass
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, tb):
+        pass
+
+
+progress_reporter_cls = _NoopProgressReporter
+"""The progress reporter class to instantiate. This class
+is expected to be a context manager with a constructor accepting `label`
+and `length` keyword arguments, an `update` method accepting a `chunk_size`
+argument and a class attribute `reportProgress` set to True (It can
+conveniently be initialized using `sys.stdout.isatty()`)
+"""
 
 
 def _request(*args, **kwargs):
@@ -79,10 +109,44 @@ def _check_for_credentials(func):
     return with_check_for_credentials
 
 
+def _progress_bar(*args, **kwargs):
+    bar = click.progressbar(*args, **kwargs)
+    bar.bar_template = "  [%(bar)s]  %(info)s  %(label)s"
+    bar.show_percent = True
+    bar.show_pos = True
+
+    def formatSize(length):
+        if length == 0:
+            return '%.2f' % length
+        unit = ''
+        # See https://en.wikipedia.org/wiki/Binary_prefix
+        units = ['k', 'M', 'G', 'T', 'P', 'E', 'Z', 'Y']
+        while True:
+            if length <= 1024 or len(units) == 0:
+                break
+            unit = units.pop(0)
+            length /= 1024.
+        return '%.2f%s' % (length, unit)
+
+    def formatPos(_self):
+        pos = formatSize(_self.pos)
+        if _self.length_known:
+            pos += '/%s' % formatSize(_self.length)
+        return pos
+
+    bar.format_pos = types.MethodType(formatPos, bar)
+    return bar
+
+
 @click.group()
-def main():
+@click.option("--progress/--no-progress", default=True,
+              help="Display progress bar (default: yes).")
+def main(progress):
     """A CLI to easily manage GitHub releases, assets and references."""
-    pass
+    global progress_reporter_cls
+    progress_reporter_cls.reportProgress = sys.stdout.isatty() and progress
+    if progress_reporter_cls.reportProgress:
+        progress_reporter_cls = _progress_bar
 
 
 @main.group("release")
@@ -492,6 +556,21 @@ def _cli_asset_upload(*args, **kwargs):
     gh_asset_upload(*args, **kwargs)
 
 
+class _ProgressFileReader(object):
+    """Wrapper used to capture File IO read progress."""
+    def __init__(self, stream, reporter):
+        self._stream = stream
+        self._reporter = reporter
+
+    def read(self, _size):
+        _chunk = self._stream.read(_size)
+        self._reporter.update(len(_chunk))
+        return _chunk
+
+    def __getattr__(self, attr):
+        return getattr(self._stream, attr)
+
+
 def _upload_release_file(
         release, upload_url, filename, verbose=False, dry_run=False):
     print("  uploading %s" % filename)
@@ -519,12 +598,15 @@ def _upload_release_file(
     # Attempt upload
     with open(filename, 'rb') as f:
         url = '{0}?name={1}'.format(upload_url, basename)
-        if verbose:
+        if verbose and not progress_reporter_cls.reportProgress:
             print("  upload_url: %s" % url)
-        response = _request(
-            'POST', url,
-            headers={'Content-Type': 'application/octet-stream'},
-            data=f.read())
+        file_size = os.path.getsize(filename)
+        with progress_reporter_cls(
+                label=basename, length=file_size) as reporter:
+            response = _request(
+                'POST', url,
+                headers={'Content-Type': 'application/octet-stream'},
+                data=_ProgressFileReader(f, reporter))
         response.raise_for_status()
         asset = response.json()
         print("  download_url: %s" % asset["browser_download_url"])
@@ -656,6 +738,28 @@ def _cli_asset_download(*args, **kwargs):
     gh_asset_download(*args, **kwargs)
 
 
+def _download_file(repo_name, asset):
+    response = _request(
+        method='GET',
+        url=GITHUB_API + '/repos/{0}/releases/assets/{1}'.format(
+            repo_name, asset['id']),
+        allow_redirects=False,
+        headers={'Accept': 'application/octet-stream'},
+        stream=True)
+    while response.status_code == 302:
+        response = _request(
+            'GET', response.headers['Location'], allow_redirects=False,
+            stream=True,
+            with_auth=False
+        )
+    with open(asset['name'], 'w+b') as f:
+        with progress_reporter_cls(
+                label=asset['name'], length=asset['size']) as reporter:
+            for chunk in response.iter_content(chunk_size=REQ_BUFFER_SIZE):
+                reporter.update(len(chunk))
+                f.write(chunk)
+
+
 def gh_asset_download(repo_name, tag_name=None, pattern=None):
     releases = get_releases(repo_name)
     downloaded = 0
@@ -674,19 +778,7 @@ def gh_asset_download(repo_name, tag_name=None, pattern=None):
                 continue
             print('release {0}: '
                   'downloading {1}'.format(release['tag_name'], asset['name']))
-            response = _request(
-                method='GET',
-                url=GITHUB_API + '/repos/{0}/releases/assets/{1}'.format(
-                    repo_name, asset['id']),
-                allow_redirects=False,
-                headers={'Accept': 'application/octet-stream'})
-            while response.status_code == 302:
-                response = _request(
-                    'GET', response.headers['Location'], allow_redirects=False,
-                    with_auth=False
-                )
-            with open(asset['name'], 'w+b') as f:
-                f.write(response.content)
+            _download_file(repo_name, asset)
             downloaded += 1
     return downloaded
 

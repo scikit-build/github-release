@@ -4,6 +4,9 @@ Next Release
 CLI
 ---
 
+* If called from a terminal, report download or upload progress. Passing ``--no-progress``
+  allows to explicitly disable progress reporting.
+
 * Fix asset download command argument parsing. `tag_name` and `pattern` are
   effectively optional positional arguments.
 
