@@ -549,7 +549,7 @@ def print_asset_info(i, asset, indent=""):
 
 @gh_asset.command("upload")
 @click.argument("tag_name")
-@click.argument("pattern")
+@click.argument("pattern", nargs=-1)
 @click.pass_obj
 def _cli_asset_upload(*args, **kwargs):
     """Upload release assets"""
