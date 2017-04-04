@@ -601,7 +601,8 @@ def _upload_release_file(
         if verbose and not progress_reporter_cls.reportProgress:
             print("  upload_url: %s" % url)
         file_size = os.path.getsize(filename)
-        with progress_reporter_cls(label=basename, length=file_size) as reporter:
+        with progress_reporter_cls(
+                label=basename, length=file_size) as reporter:
             response = _request(
                 'POST', url,
                 headers={'Content-Type': 'application/octet-stream'},
@@ -737,6 +738,28 @@ def _cli_asset_download(*args, **kwargs):
     gh_asset_download(*args, **kwargs)
 
 
+def _download_file(repo_name, asset):
+    response = _request(
+        method='GET',
+        url=GITHUB_API + '/repos/{0}/releases/assets/{1}'.format(
+            repo_name, asset['id']),
+        allow_redirects=False,
+        headers={'Accept': 'application/octet-stream'},
+        stream=True)
+    while response.status_code == 302:
+        response = _request(
+            'GET', response.headers['Location'], allow_redirects=False,
+            stream=True,
+            with_auth=False
+        )
+    with open(asset['name'], 'w+b') as f:
+        with progress_reporter_cls(
+                label=asset['name'], length=asset['size']) as reporter:
+            for chunk in response.iter_content(chunk_size=REQ_BUFFER_SIZE):
+                reporter.update(len(chunk))
+                f.write(chunk)
+
+
 def gh_asset_download(repo_name, tag_name=None, pattern=None):
     releases = get_releases(repo_name)
     downloaded = 0
@@ -755,25 +778,7 @@ def gh_asset_download(repo_name, tag_name=None, pattern=None):
                 continue
             print('release {0}: '
                   'downloading {1}'.format(release['tag_name'], asset['name']))
-            response = _request(
-                method='GET',
-                url=GITHUB_API + '/repos/{0}/releases/assets/{1}'.format(
-                    repo_name, asset['id']),
-                allow_redirects=False,
-                headers={'Accept': 'application/octet-stream'},
-                stream=True)
-            while response.status_code == 302:
-                response = _request(
-                    'GET', response.headers['Location'], allow_redirects=False,
-                    stream=True,
-                    with_auth=False
-                )
-            with open(asset['name'], 'w+b') as f:
-                with progress_reporter_cls(
-                        label=asset['name'], length=asset['size']) as reporter:
-                    for chunk in response.iter_content(chunk_size=REQ_BUFFER_SIZE):
-                        reporter.update(len(chunk))
-                        f.write(chunk)
+            _download_file(repo_name, asset)
             downloaded += 1
     return downloaded
 
