@@ -42,7 +42,8 @@ def test_upload(tmpdir):
     ]))
 
     with push_dir(tmpdir):
-        ghr.gh_asset_upload(REPO_NAME, tag_name, "dist/asset_*")
+        ghr.gh_asset_upload(
+            REPO_NAME, tag_name, ["dist/asset_*", "dist/asset_1"])
 
     assert (check_releases([
         {"tag_name": tag_name,
