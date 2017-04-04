@@ -2,6 +2,7 @@
 env
 build
 dist
+.eggs
 *.egg-info
 *.pyc
 .cache
