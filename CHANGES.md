@@ -4,6 +4,9 @@ Next Release
 CLI
 ---
 
+* In addition of setting `GITHUB_TOKEN` environment variable or using `netrc` file, the CLI
+  now accepts a ``--github-token`` argument. More details [here](https://github.com/j0057/github-release/blob/master/README.md#configuring).
+
 * If called from a terminal, report download or upload progress. Passing ``--no-progress``
   allows to explicitly disable progress reporting.
 

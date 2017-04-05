@@ -24,6 +24,8 @@ GITHUB_API = "https://api.github.com"
 
 REQ_BUFFER_SIZE = 65536  # Chunk size when iterating a download body
 
+_github_token_cli_arg = None
+
 
 class _NoopProgressReporter(object):
     reportProgress = False
@@ -53,8 +55,11 @@ conveniently be initialized using `sys.stdout.isatty()`)
 
 def _request(*args, **kwargs):
     with_auth = kwargs.pop("with_auth", True)
-    if "GITHUB_TOKEN" in os.environ and with_auth:
-        kwargs["auth"] = (os.environ["GITHUB_TOKEN"], 'x-oauth-basic')
+    token = _github_token_cli_arg
+    if not token:
+        token = os.environ.get("GITHUB_TOKEN", None)
+    if token and with_auth:
+        kwargs["auth"] = (token, 'x-oauth-basic')
     for _ in range(3):
         response = request(*args, **kwargs)
         is_travis = os.getenv("TRAVIS",  None) is not None
@@ -98,12 +103,14 @@ def handle_http_error(func):
 def _check_for_credentials(func):
     @wraps(func)
     def with_check_for_credentials(*args, **kwargs):
-        has_github_token = "GITHUB_TOKEN" in os.environ
+        has_github_token_env_var = "GITHUB_TOKEN" in os.environ
         has_netrc = requests.utils.get_netrc_auth(GITHUB_API)
-        if not has_github_token and not has_netrc:
+        if (not _github_token_cli_arg
+                and not has_github_token_env_var and not has_netrc):
             raise EnvironmentError(
-                "This command requires credentials set using GITHUB_TOKEN "
-                "env. variable or netrc file. For more details, "
+                "This command requires credentials provided by passing "
+                "--github-token CLI argument, set using GITHUB_TOKEN "
+                "env. variable or using netrc file. For more details, "
                 "see https://github.com/j0057/github-release#configuring")
         return func(*args, **kwargs)
     return with_check_for_credentials
@@ -139,14 +146,18 @@ def _progress_bar(*args, **kwargs):
 
 
 @click.group()
+@click.option("--github-token", envvar='GITHUB_TOKEN', default=None,
+              help="[default: GITHUB_TOKEN env. variable]")
 @click.option("--progress/--no-progress", default=True,
               help="Display progress bar (default: yes).")
-def main(progress):
+def main(github_token, progress):
     """A CLI to easily manage GitHub releases, assets and references."""
     global progress_reporter_cls
     progress_reporter_cls.reportProgress = sys.stdout.isatty() and progress
     if progress_reporter_cls.reportProgress:
         progress_reporter_cls = _progress_bar
+    global _github_token_cli_arg
+    _github_token_cli_arg = github_token
 
 
 @main.group("release")

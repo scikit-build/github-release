@@ -9,7 +9,7 @@ from . import push_argv
 @pytest.mark.parametrize("options, command,action,args", [
     # asset
     # ([], "asset", "upload", []),
-    ([], "asset", "upload", ["1.0.0", "dist/foo", "dist/bar"]),
+    (["--github-token", "123546"], "asset", "upload", ["1.0.0", "dist/foo", "dist/bar"]),  # noqa: E501
     (["--no-progress"], "asset", "upload", ["1.0.0", "dist/foo"]),
     (["--progress"], "asset", "upload", ["1.0.0", "dist/foo"]),
     # ([], "asset", "download", []),
@@ -64,7 +64,11 @@ def test_cli_arguments(mocker, options, command, action, args):
     class AbortTestException(Exception):
         pass
 
+    github_token_cli_arg_expected = "--github-token" in options
+
     def mocked_request(*request_args, **request_kwargs):
+        if github_token_cli_arg_expected:
+            assert ghr._github_token_cli_arg == "123546"
         raise AbortTestException
 
     mocker.patch("github_release._request", new=mocked_request)
