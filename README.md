@@ -80,8 +80,16 @@ Python, you should probably look into project like [github3py](http://github3py.
 
 # installing
 
+Released stable version can be installed from [pypi](https://pypi.python.org/pypi/githubrelease) using:
+
 ```bash
 pip install githubrelease
+```
+
+Bleeding edge version can be installed using:
+
+```bash
+pip intall githubrelease -f https://github.com/j0057/github-release/releases/tag/latest
 ```
 
 # configuring
@@ -335,41 +343,50 @@ that has already been intercepted and recorded.
 
 2. Make sure the cli and module work as expected
 
-3. Tag the release. Requires a GPG key with signatures. For version *X.Y.Z*::
+3. Review [CHANGES.md](https://github.com/j0057/github-release/blob/master/README.md), replace *Next Release* into *X.Y.Z*, commit and push. Consider using `[ci skip]` in commit message.
+
+4. Tag the release. Requires a GPG key with signatures. For version *X.Y.Z*:
 
     ```bash
     git tag -s -m "githubrelease X.Y.Z" X.Y.Z origin/master
     ```
 
-4. Create the source tarball and binary wheels::
+5. Create the source tarball and binary wheels:
 
     ```bash
     rm -rf dist/
     python setup.py sdist bdist_wheel
     ```
 
-5. Upload the packages to the testing PyPI instance::
+6. Upload the packages to the testing PyPI instance:
 
     ```bash
     twine upload --sign -r pypitest dist/*
     ```
 
-6. Check the [PyPI testing package page](https://testpypi.python.org/pypi/githubrelease/).
+7. Check the [PyPI testing package page](https://testpypi.python.org/pypi/githubrelease/).
 
-7. Upload the packages to the PyPI instance::
+8. Upload the packages to the PyPI instance::
 
     ```bash
     twine upload --sign dist/*
     ```
 
-8. Check the [PyPI package page](https://pypi.python.org/pypi/githubrelease/).
+9. Check the [PyPI package page](https://pypi.python.org/pypi/githubrelease/).
 
-9. Make sure the package can be installed::
+10. Create a virtual env, and make sure the package can be installed:
 
     ```bash
-    mkvirtualenv test-pip-install
+    mkvirtualenv test-githubrelease-install
     pip install githubrelease
-    rmvirtualenv test-pip-install
+    ```
+
+11. Create github release and upload packages:
+
+    ```bash
+    export GITHUB_TOKEN=YOUR_TOKEN
+    githubrelease release j0057/github-release create X.Y.Z --publish ./dist/*
+    rmvirtualenv test-githubrelease-install
     ```
 
 # faq
