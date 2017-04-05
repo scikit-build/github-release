@@ -87,15 +87,21 @@ pip install githubrelease
 # configuring
 
 First, [generate a new token](https://help.github.com/articles/creating-an-access-token-for-command-line-use). It
-should have at least the repo scope.
+should have at least the `repo` scope.
 
-Then, there are two options:
+Then, there are three options:
 
 * Set the `GITHUB_TOKEN` environment variable:
 
 ```bash
 export GITHUB_TOKEN=YOUR_TOKEN
 /path/to/command
+```
+
+* Pass the ``--github-token`` CLI argument. For example:
+
+```bash
+$ githubrelease --github-token YOUR_TOKEN release jcfr/sandbox create --prerelease 1.0.0
 ```
 
 
@@ -124,6 +130,7 @@ Usage: githubrelease [OPTIONS] COMMAND [ARGS]...
   A CLI to easily manage GitHub releases, assets and references.
 
 Options:
+  --github-token TEXT         [default: GITHUB_TOKEN env. variable]
   --progress / --no-progress  Display progress bar (default: yes).
   --help                      Show this message and exit.
 
@@ -364,6 +371,12 @@ that has already been intercepted and recorded.
     pip install githubrelease
     rmvirtualenv test-pip-install
     ```
+
+# faq
+
+* Why do I get a ``requests.exceptions.HTTPError: 401 Client Error: Unauthorized for url  https://api.github.com/repos/...`` ?
+
+  It probably means that the GitHub token you specified is invalid.
 
 
 # license
