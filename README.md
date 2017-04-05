@@ -80,8 +80,16 @@ Python, you should probably look into project like [github3py](http://github3py.
 
 # installing
 
+Released stable version can be installed from [pypi](https://pypi.python.org/pypi/githubrelease) using:
+
 ```bash
 pip install githubrelease
+```
+
+Bleeding edge version can be installed using:
+
+```bash
+pip intall githubrelease -f https://github.com/j0057/github-release/releases/tag/latest
 ```
 
 # configuring

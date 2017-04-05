@@ -63,6 +63,15 @@ Testing
 
 * Relocate test repositories under [github-release-bot](https://github.com/github-release-bot) user.
 
+Build System
+------------
+
+* Latest packages are now published
+
+  * Packages generated from master branch are available at https://github.com/j0057/github-release/releases/tag/latest
+
+  * They can be installed using `pip intall githubrelease -f https://github.com/j0057/github-release/releases/tag/latest`
+
 1.5.0
 =====
 
