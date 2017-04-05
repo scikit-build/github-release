@@ -72,6 +72,12 @@ Build System
 
   * They can be installed using `pip intall githubrelease -f https://github.com/j0057/github-release/releases/tag/latest`
 
+Documentation
+-------------
+
+* Update [maintainers: how to make a release ?](https://github.com/j0057/github-release/blob/master/README.md#maintainers-how-to-make-a-release-) section
+  to include update of *CHANGES.md* and creation of a [github release](https://github.com/j0057/github-release/releases).
+
 1.5.0
 =====
 
@@ -189,8 +195,8 @@ Build System
 Documentation
 -------------
 
-* Re-organize and improve [README.md](https://github.com/j0057/github-release/tree/add-changes-md#table-of-contents).
+* Re-organize and improve [README.md](https://github.com/j0057/github-release/blob/master/README.md#table-of-contents).
 
-* Add [maintainers: how to make a release ?](https://github.com/j0057/github-release/tree/add-changes-md#maintainers-how-to-make-a-release-) section.
+* Add [maintainers: how to make a release ?](https://github.com/j0057/github-release/blob/master/README.md#maintainers-how-to-make-a-release-) section.
 
 * Add [CONTRIBUTING](https://github.com/j0057/github-release/blob/master/CONTRIBUTING.md#contributing) guidelines.
