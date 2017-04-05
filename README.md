@@ -22,13 +22,13 @@ from the command-line:
 
 ```bash
 # create a prerelease
-$ githubrelease release jcfr/sandbox create --prerelease 1.0.0
+$ githubrelease release jcfr/sandbox create 1.0.0 --prerelease
 
 # upload assets
-$ githubrelease asset jcfr/sandbox 1.0.0 "dist/*"
+$ githubrelease asset jcfr/sandbox upload 1.0.0 "dist/*"
 
 # publish the release
-$ githubrelease release jcfr/sandbox --publish 1.0.0
+$ githubrelease release jcfr/sandbox publish 1.0.0
 
 # or all together: create with custom name, upload assets, and publish
 $ githubrelease release jcfr/sandbox create 2.0.0 --publish --name "Awesome 2.0" "dist/*"
