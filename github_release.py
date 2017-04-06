@@ -275,15 +275,23 @@ def _update_release_sha(repo_name, tag_name, new_release_sha, dry_run):
     if previous_release_sha == new_release_sha:
         return
     tmp_tag_name = tag_name + "-tmp"
+
+    time.sleep(0.1)
     patch_release(repo_name, tag_name,
                   tag_name=tmp_tag_name,
                   target_commitish=new_release_sha,
                   dry_run=dry_run)
+
+    time.sleep(0.1)
     gh_ref_delete(repo_name, "refs/tags/%s" % tag_name, dry_run=dry_run)
+
+    time.sleep(0.1)
     patch_release(repo_name, tmp_tag_name,
                   tag_name=tag_name,
                   target_commitish=new_release_sha,
                   dry_run=dry_run)
+
+    time.sleep(0.1)
     gh_ref_delete(repo_name,
                   "refs/tags/%s" % tmp_tag_name, dry_run=dry_run)
 
