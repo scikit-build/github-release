@@ -74,6 +74,8 @@ Python, you should probably look into project like [github3py](http://github3py.
   * for selectively deleting assets
 * report download and upload progress
 * allow deleting individual asset from a release
+* retry upload in case of server failure
+* gracefully handle release with invalid assets (the ones with *new* state)
 * authentication through `GITHUB_TOKEN` environment variable or `~/.netrc` file
 * pure python, only depends on [requests](http://docs.python-requests.org/en/master/) and [click](http://pocco-click.readthedocs.io)
 
