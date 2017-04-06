@@ -233,7 +233,7 @@ def get_releases(repo_name, verbose=False):
     releases = response.json()
     if verbose:
         list(map(print_release_info,
-                 sorted(response.json(), key=lambda r: r['tag_name'])))
+                 sorted(releases, key=lambda r: r['tag_name'])))
     return releases
 
 
@@ -336,10 +336,25 @@ def patch_release(repo_name, current_tag_name, **values):
             tags=True, verbose=verbose, dry_run=dry_run)
 
 
+def get_assets(repo_name, tag_name, verbose=False):
+    release = get_release(repo_name, tag_name)
+    if not release:
+        raise Exception('Release with tag_name {0} not found'.format(tag_name))
+    response = _request(
+        'GET', GITHUB_API + '/repos/{0}/releases/{1}/assets'.format(
+            repo_name, release["id"]))
+    response.raise_for_status()
+    assets = response.json()
+    if verbose:
+        for i, asset in enumerate(sorted(assets, key=lambda r: r['name'])):
+            print_asset_info(i, asset)
+    return assets
+
+
 def get_asset_info(repo_name, tag_name, filename):
-    release = get_release_info(repo_name, tag_name)
+    assets = get_assets(repo_name, tag_name)
     try:
-        asset = next(a for a in release['assets'] if a['name'] == filename)
+        asset = next(a for a in assets if a['name'] == filename)
         return asset
     except StopIteration:
         raise Exception('Asset with filename {0} not found in '
@@ -551,8 +566,9 @@ def print_asset_info(i, asset, indent=""):
     print(indent + "Asset #{i}".format(i=i))
     indent = "  " + indent
     print(indent + "name      : {name}".format(i=i, **asset))
-    print(indent + "size      : {size}".format(i=i, **asset))
+    print(indent + "state     : {state}".format(i=i, **asset))
     print(indent + "uploader  : {login}".format(i=i, **asset['uploader']))
+    print(indent + "size      : {size}".format(i=i, **asset))
     print(indent + "URL       : {browser_download_url}".format(i=i, **asset))
     print(indent + "Downloads : {download_count}".format(i=i, **asset))
     print("")
@@ -792,6 +808,14 @@ def gh_asset_download(repo_name, tag_name=None, pattern=None):
             _download_file(repo_name, asset)
             downloaded += 1
     return downloaded
+
+
+@gh_asset.command("list")
+@click.argument("tag_name")
+@click.pass_obj
+def _cli_asset_list(repo_name, tag_name):
+    """List release assets"""
+    return get_assets(repo_name, tag_name, verbose=True)
 
 
 #

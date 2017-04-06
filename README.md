@@ -211,7 +211,8 @@ It understands the following commands:
 
 | command   | parameters                 | description                                               |
 |-----------|----------------------------|-----------------------------------------------------------|
-| upload    | tagname filename...        | upload files to a release                                |
+| list      |                            | list all assets                                           |
+| upload    | tagname filename...        | upload files to a release                                 |
 | download  |                            | download all files from all releases to current directory |
 | download  | tagname                    | download all files from a release to current directory    |
 | download  | tagname filename           | download file to current directory                        |
