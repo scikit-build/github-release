@@ -233,7 +233,7 @@ def get_releases(repo_name, verbose=False):
     releases = response.json()
     if verbose:
         list(map(print_release_info,
-                 sorted(response.json(), key=lambda r: r['tag_name'])))
+                 sorted(releases, key=lambda r: r['tag_name'])))
     return releases
 
 
@@ -275,15 +275,23 @@ def _update_release_sha(repo_name, tag_name, new_release_sha, dry_run):
     if previous_release_sha == new_release_sha:
         return
     tmp_tag_name = tag_name + "-tmp"
+
+    time.sleep(0.1)
     patch_release(repo_name, tag_name,
                   tag_name=tmp_tag_name,
                   target_commitish=new_release_sha,
                   dry_run=dry_run)
+
+    time.sleep(0.1)
     gh_ref_delete(repo_name, "refs/tags/%s" % tag_name, dry_run=dry_run)
+
+    time.sleep(0.1)
     patch_release(repo_name, tmp_tag_name,
                   tag_name=tag_name,
                   target_commitish=new_release_sha,
                   dry_run=dry_run)
+
+    time.sleep(0.1)
     gh_ref_delete(repo_name,
                   "refs/tags/%s" % tmp_tag_name, dry_run=dry_run)
 
@@ -336,10 +344,25 @@ def patch_release(repo_name, current_tag_name, **values):
             tags=True, verbose=verbose, dry_run=dry_run)
 
 
+def get_assets(repo_name, tag_name, verbose=False):
+    release = get_release(repo_name, tag_name)
+    if not release:
+        raise Exception('Release with tag_name {0} not found'.format(tag_name))
+    response = _request(
+        'GET', GITHUB_API + '/repos/{0}/releases/{1}/assets'.format(
+            repo_name, release["id"]))
+    response.raise_for_status()
+    assets = response.json()
+    if verbose:
+        for i, asset in enumerate(sorted(assets, key=lambda r: r['name'])):
+            print_asset_info(i, asset)
+    return assets
+
+
 def get_asset_info(repo_name, tag_name, filename):
-    release = get_release_info(repo_name, tag_name)
+    assets = get_assets(repo_name, tag_name)
     try:
-        asset = next(a for a in release['assets'] if a['name'] == filename)
+        asset = next(a for a in assets if a['name'] == filename)
         return asset
     except StopIteration:
         raise Exception('Asset with filename {0} not found in '
@@ -551,8 +574,9 @@ def print_asset_info(i, asset, indent=""):
     print(indent + "Asset #{i}".format(i=i))
     indent = "  " + indent
     print(indent + "name      : {name}".format(i=i, **asset))
-    print(indent + "size      : {size}".format(i=i, **asset))
+    print(indent + "state     : {state}".format(i=i, **asset))
     print(indent + "uploader  : {login}".format(i=i, **asset['uploader']))
+    print(indent + "size      : {size}".format(i=i, **asset))
     print(indent + "URL       : {browser_download_url}".format(i=i, **asset))
     print(indent + "Downloads : {download_count}".format(i=i, **asset))
     print("")
@@ -583,59 +607,85 @@ class _ProgressFileReader(object):
 
 
 def _upload_release_file(
-        release, upload_url, filename, verbose=False, dry_run=False):
-    print("  uploading %s" % filename)
+        repo_name, tag_name, upload_url, filename,
+        verbose=False, dry_run=False, retry=True):
     already_uploaded = False
     uploaded = False
     basename = os.path.basename(filename)
+    # Sanity checks
+    assets = get_assets(repo_name, tag_name)
+    download_url = None
+    for asset in assets:
+        if asset["name"] == basename:
+            if asset["state"] == "uploaded":
+                download_url = asset["browser_download_url"]
+                break
+            # Remove asset that failed to upload
+            # See https://developer.github.com/v3/repos/releases/#response-for-upstream-failure  # noqa: E501
+            if asset["state"] == "new":
+                print("  deleting %s (invalid asset "
+                      "with state set to 'new')" % asset['name'])
+                url = (
+                    GITHUB_API
+                    + '/repos/{0}/releases/assets/{1}'.format(
+                        repo_name, asset['id'])
+                )
+                response = _request('DELETE', url)
+                response.raise_for_status()
+
+    print("  uploading %s" % filename)
+
     # Skip if an asset with same name has already been uploaded
     # Trying to upload would give a HTTP error 422
-    download_url = None
-    for asset in release["assets"]:
-        if asset["name"] == basename:
-            download_url = asset["browser_download_url"]
-            break
     if download_url:
         already_uploaded = True
         print("  skipping (asset with same name already exists)")
         print("  download_url: %s" % download_url)
         print("")
-        return already_uploaded, uploaded
+        return already_uploaded, uploaded, {}
     if dry_run:
         uploaded = True
         print("  download_url: Unknown (dry_run)")
         print("")
-        return already_uploaded, uploaded
+        return already_uploaded, uploaded, {}
+
+    url = '{0}?name={1}'.format(upload_url, basename)
+    if verbose and not progress_reporter_cls.reportProgress:
+        print("  upload_url: %s" % url)
+    file_size = os.path.getsize(filename)
+
     # Attempt upload
     with open(filename, 'rb') as f:
-        url = '{0}?name={1}'.format(upload_url, basename)
-        if verbose and not progress_reporter_cls.reportProgress:
-            print("  upload_url: %s" % url)
-        file_size = os.path.getsize(filename)
         with progress_reporter_cls(
                 label=basename, length=file_size) as reporter:
             response = _request(
                 'POST', url,
                 headers={'Content-Type': 'application/octet-stream'},
                 data=_ProgressFileReader(f, reporter))
+            data = response.json()
+
+    if response.status_code == 502 and retry:
+        print("  retrying (upload failed with status_code=502)")
+        already_uploaded, uploaded, data = _upload_release_file(
+            repo_name, tag_name, upload_url, filename,
+            verbose=verbose, retry=False)
+    else:
         response.raise_for_status()
-        asset = response.json()
-        print("  download_url: %s" % asset["browser_download_url"])
-        print("")
-        uploaded = True
-        return already_uploaded, uploaded
+    asset = data
+    print("  download_url: %s" % asset["browser_download_url"])
+    print("")
+    uploaded = True
+    return already_uploaded, uploaded, response.json()
 
 
 @_check_for_credentials
 def gh_asset_upload(repo_name, tag_name, pattern, dry_run=False, verbose=False):
     if not dry_run:
-        release = get_release_info(repo_name, tag_name)
+        upload_url = get_release_info(repo_name, tag_name)["upload_url"]
+        if "{" in upload_url:
+            upload_url = upload_url[:upload_url.index("{")]
     else:
-        release = {"assets": [], "upload_url": "unknown"}
-
-    upload_url = release["upload_url"]
-    if "{" in upload_url:
-        upload_url = upload_url[:upload_url.index("{")]
+        upload_url = "unknown"
 
     # Raise exception if no token is specified AND netrc file is found
     # BUT only api.github.com is specified. See #17
@@ -666,8 +716,8 @@ def gh_asset_upload(repo_name, tag_name, pattern, dry_run=False, verbose=False):
     already_uploaded = False
 
     for filename in filenames:
-        already_uploaded, uploaded = _upload_release_file(
-            release, upload_url, filename, verbose, dry_run)
+        already_uploaded, uploaded, _ = _upload_release_file(
+            repo_name, tag_name, upload_url, filename, verbose, dry_run)
 
     if not uploaded and not already_uploaded:
         print("skipping upload of '%s' release assets ("
@@ -690,12 +740,13 @@ def _cli_asset_delete(*args, **kwargs):
 @_check_for_credentials
 def gh_asset_delete(repo_name, tag_name, pattern,
                     keep_pattern=None, dry_run=False, verbose=False):
-    release = get_release_info(repo_name, tag_name)
+    # Get assets
+    assets = get_assets(repo_name, tag_name)
     # List of assets
     excluded_assets = {}
     matched_assets = []
     matched_assets_to_keep = {}
-    for asset in release['assets']:
+    for asset in assets:
         if not fnmatch.fnmatch(asset['name'], pattern):
             skip_reason = "do NOT match pattern '%s'" % pattern
             excluded_assets[asset['name']] = skip_reason
@@ -792,6 +843,14 @@ def gh_asset_download(repo_name, tag_name=None, pattern=None):
             _download_file(repo_name, asset)
             downloaded += 1
     return downloaded
+
+
+@gh_asset.command("list")
+@click.argument("tag_name")
+@click.pass_obj
+def _cli_asset_list(repo_name, tag_name):
+    """List release assets"""
+    return get_assets(repo_name, tag_name, verbose=True)
 
 
 #

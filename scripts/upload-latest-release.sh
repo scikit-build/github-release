@@ -14,8 +14,8 @@ PRERELEASE_NAME=latest
 PACKAGE_DIR=./dist
 EXPECTED_PACKAGE_COUNT=2
 
-release_date=$(date -u "+%Y-%m-%d at %0k:%M %Z")
-release_name="Latest (updated at ${release_date})"
+release_date=$(date -u "+%Y-%m-%d %0k:%M %Z")
+release_name="Latest (updated on ${release_date})"
 
 # Check if packages have been generated
 packages=(${PACKAGE_DIR}/*)

@@ -1,3 +1,33 @@
+Next Release
+============
+
+Features (CLI and Python API)
+-----------------------------
+
+* ``asset`` command:
+
+  * ``list``:
+
+    * Explicitly support listing of release assets. This will list assets independently of
+      their state (*uploaded* or *new*).
+
+    * If an asset has its state set to *new*, it means a problem occurred during a previous
+    upload and the asset can safely be deleted. See [here](https://developer.github.com/v3/repos/releases/#response-for-upstream-failure)
+    for more details.
+
+  * ``delete``:
+
+    * Support deleting asset independently of their state.
+
+  * ``upload``:
+
+    * Automatically delete existing asset if name matches and if its
+      state is "new". This will happen if a previous upload was interrupted
+      and the asset on the server has been created but is incomplete.
+
+    * Retry to upload if server returns a 502 error.
+
+
 1.5.1
 =====
 
