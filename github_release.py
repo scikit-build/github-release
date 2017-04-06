@@ -706,12 +706,13 @@ def _cli_asset_delete(*args, **kwargs):
 @_check_for_credentials
 def gh_asset_delete(repo_name, tag_name, pattern,
                     keep_pattern=None, dry_run=False, verbose=False):
-    release = get_release_info(repo_name, tag_name)
+    # Get assets
+    assets = get_assets(repo_name, tag_name)
     # List of assets
     excluded_assets = {}
     matched_assets = []
     matched_assets_to_keep = {}
-    for asset in release['assets']:
+    for asset in assets:
         if not fnmatch.fnmatch(asset['name'], pattern):
             skip_reason = "do NOT match pattern '%s'" % pattern
             excluded_assets[asset['name']] = skip_reason
