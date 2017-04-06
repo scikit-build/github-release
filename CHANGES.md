@@ -19,6 +19,14 @@ Features (CLI and Python API)
 
     * Support deleting asset independently of their state.
 
+  * ``upload``:
+
+    * Automatically delete existing asset if name matches and if its
+      state is "new". This will happen if a previous upload was interrupted
+      and the asset on the server has been created but is incomplete.
+
+    * Retry to upload if server returns a 502 error.
+
 
 1.5.1
 =====
