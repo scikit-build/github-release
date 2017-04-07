@@ -1,3 +1,18 @@
+1.5.3
+=====
+
+Python API
+----------
+
+* Update ``gh_ref_delete`` to return True if references were removed.
+
+* Ensure ``gh_ref_list`` return list of references.
+
+Testing
+-------
+
+* Add test for references.
+
 1.5.2
 =====
 
@@ -26,19 +41,6 @@ Features (CLI and Python API)
       and the asset on the server has been created but is incomplete.
 
     * Retry to upload if server returns a 502 error.
-
-Python API
-----------
-
-* Update ``gh_ref_delete`` to return True if references were removed.
-
-* Ensure ``gh_ref_list`` return list of references.
-
-Testing
--------
-
-* Add test for references.
-
 
 1.5.1
 =====
