@@ -910,6 +910,7 @@ def gh_ref_list(repo_name, tags=None,  pattern=None, verbose=False):
         list(map(print_ref_info, sorted_refs))
     else:
         list(map(lambda ref: print(ref['ref']), sorted_refs))
+    return sorted_refs
 
 
 @gh_ref.command("create")
@@ -950,6 +951,7 @@ def _cli_ref_delete(*args, **kwargs):
 @_check_for_credentials
 def gh_ref_delete(repo_name, pattern, keep_pattern=None, tags=False,
                   dry_run=False, verbose=False):
+    removed_refs = []
     refs = get_refs(repo_name, tags=tags)
     for ref in refs:
         if not fnmatch.fnmatch(ref['ref'], pattern):
@@ -961,12 +963,14 @@ def gh_ref_delete(repo_name, pattern, keep_pattern=None, tags=False,
             if fnmatch.fnmatch(ref['ref'], keep_pattern):
                 continue
         print('deleting reference {0}'.format(ref['ref']))
+        removed_refs.append(ref['ref'])
         if dry_run:
             continue
         response = _request(
             'DELETE',
             GITHUB_API + '/repos/{0}/git/{1}'.format(repo_name, ref['ref']))
         response.raise_for_status()
+    return len(removed_refs) > 0
 
 
 #

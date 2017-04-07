@@ -179,7 +179,7 @@ def clear_github_release_and_tags():
         with _ignore_4xx_errors():
             gh_release_delete(REPO_NAME, release["tag_name"])
     with _ignore_4xx_errors():
-        gh_ref_delete(REPO_NAME, "*", tags=True)
+        gh_ref_delete(REPO_NAME, "*", keep_pattern="refs/heads/master")
 
 
 #
@@ -253,7 +253,7 @@ def get_tag(ref="HEAD"):
         limit=1, ignore_errors=True)
 
 
-def do_commit(version=None, release_tag=None, push=False):
+def do_commit(version=None, branch=None, release_tag=None, push=False):
     # Compose commit message
     commit_date = generate_commit_date()
     if version is None:
@@ -262,6 +262,8 @@ def do_commit(version=None, release_tag=None, push=False):
     if release_tag is not None:
         msg = "%s %s" % (PROJECT_NAME, release_tag)
         version = release_tag
+    if branch is not None:
+        msg = "%s (branch: %s)" % (msg, branch)
     commit_msg = "ENH: %s" % msg
     # Update README and VERSION files
     with open("README.md", "a") as content:
@@ -281,7 +283,13 @@ def do_commit(version=None, release_tag=None, push=False):
         run("git tag -a -m \"ENH: %s %s\" %s" % (
             PROJECT_NAME, release_tag, release_tag))
         if push:
-            run("git push --quiet origin %s" % release_tag)
+            run("git push --quiet origin refs/tags/%s" % release_tag)
+    print("")
+    # Create branch
+    if branch is not None:
+        run("git branch %s" % branch)
+        if push:
+            run("git push --quiet origin refs/heads/%s" % branch)
     print("")
 
     return run("git rev-parse HEAD", limit=1)
