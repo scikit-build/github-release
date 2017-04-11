@@ -1,3 +1,15 @@
+Next release
+============
+
+Features (CLI and Python API)
+-----------------------------
+
+* ``ref`` command:
+
+  * ``list``: Consolidate tags listing using [refs and refs/tags](https://developer.github.com/v3/git/refs/#get-all-references)
+    endpoints. In practice, we observed that tags can be listed with one or the other.
+
+
 1.5.3
 =====
 

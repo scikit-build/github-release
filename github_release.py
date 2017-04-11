@@ -877,10 +877,25 @@ def get_refs(repo_name, tags=None, pattern=None):
     # If "tags" is True, keep only "refs/tags/*"
     data = response.json()
     if tags:
+        tag_names = []
         data = []
         for ref in response.json():
             if ref['ref'].startswith("refs/tags"):
                 data.append(ref)
+                tag_names.append(ref["ref"])
+
+        try:
+            response = _request(
+                'GET',
+                GITHUB_API + '/repos/{0}/git/refs/tags'.format(repo_name))
+            response.raise_for_status()
+            for ref in response.json():
+                if ref["ref"] not in tag_names:
+                    data.append(ref)
+        except requests.exceptions.HTTPError as exc_info:
+            response = exc_info.response
+            if response.status_code != 404:
+                raise
 
     # If "pattern" is not None, select only matching references
     filtered_data = data
