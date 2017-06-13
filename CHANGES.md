@@ -1,3 +1,15 @@
+Next Release
+============
+
+Features (CLI and Python API)
+-----------------------------
+
+* Support projects having more than 30 assets, releases or refs.
+
+  * Introduce dependency to [LinkHeader](https://pypi.python.org/pypi/LinkHeader/) python
+    package to handle [GitHub pagination information](https://developer.github.com/v3/guides/traversing-with-pagination/).
+
+
 1.5.4
 =====
 

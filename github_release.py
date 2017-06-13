@@ -16,6 +16,7 @@ from functools import wraps
 from pprint import pprint
 
 import click
+import link_header
 import requests
 from requests import request
 
@@ -145,6 +146,22 @@ def _progress_bar(*args, **kwargs):
     return bar
 
 
+def _recursive_gh_get(href, items):
+    """Recursively get list of GitHub objects.
+
+    See https://developer.github.com/v3/guides/traversing-with-pagination/
+    """
+    response = _request('GET', href)
+    response.raise_for_status()
+    items.extend(response.json())
+    if "link" not in response.headers:
+        return
+    links = link_header.parse(response.headers["link"])
+    rels = {link.rel: link.href for link in links.links}
+    if "next" in rels:
+        _recursive_gh_get(rels["next"], items)
+
+
 @click.group()
 @click.option("--github-token", envvar='GITHUB_TOKEN', default=None,
               help="[default: GITHUB_TOKEN env. variable]")
@@ -227,10 +244,11 @@ def print_release_info(release, title=None, indent=""):
 
 
 def get_releases(repo_name, verbose=False):
-    response = _request(
-        'GET', GITHUB_API + '/repos/{0}/releases'.format(repo_name))
-    response.raise_for_status()
-    releases = response.json()
+
+    releases = []
+    _recursive_gh_get(
+        GITHUB_API + '/repos/{0}/releases'.format(repo_name), releases)
+
     if verbose:
         list(map(print_release_info,
                  sorted(releases, key=lambda r: r['tag_name'])))
@@ -348,14 +366,15 @@ def get_assets(repo_name, tag_name, verbose=False):
     release = get_release(repo_name, tag_name)
     if not release:
         raise Exception('Release with tag_name {0} not found'.format(tag_name))
-    response = _request(
-        'GET', GITHUB_API + '/repos/{0}/releases/{1}/assets'.format(
-            repo_name, release["id"]))
-    response.raise_for_status()
-    assets = response.json()
+
+    assets = []
+    _recursive_gh_get(GITHUB_API + '/repos/{0}/releases/{1}/assets'.format(
+        repo_name, release["id"]), assets)
+
     if verbose:
         for i, asset in enumerate(sorted(assets, key=lambda r: r['name'])):
             print_asset_info(i, asset)
+
     return assets
 
 
@@ -870,26 +889,26 @@ def print_ref_info(ref, indent=""):
 
 
 def get_refs(repo_name, tags=None, pattern=None):
-    response = _request(
-          'GET', GITHUB_API + '/repos/{0}/git/refs'.format(repo_name))
-    response.raise_for_status()
+
+    refs = []
+    _recursive_gh_get(
+        GITHUB_API + '/repos/{0}/git/refs'.format(repo_name), refs)
 
     # If "tags" is True, keep only "refs/tags/*"
-    data = response.json()
+    data = refs
     if tags:
         tag_names = []
         data = []
-        for ref in response.json():
+        for ref in refs:
             if ref['ref'].startswith("refs/tags"):
                 data.append(ref)
                 tag_names.append(ref["ref"])
 
         try:
-            response = _request(
-                'GET',
-                GITHUB_API + '/repos/{0}/git/refs/tags'.format(repo_name))
-            response.raise_for_status()
-            for ref in response.json():
+            tags = []
+            _recursive_gh_get(
+                GITHUB_API + '/repos/{0}/git/refs/tags'.format(repo_name), tags)
+            for ref in tags:
                 if ref["ref"] not in tag_names:
                     data.append(ref)
         except requests.exceptions.HTTPError as exc_info:
