@@ -592,6 +592,7 @@ def _cli_release_debug(repo_name, tag_name):
 def print_asset_info(i, asset, indent=""):
     print(indent + "Asset #{i}".format(i=i))
     indent = "  " + indent
+    print(indent + "ID        : {id}".format(i=i, **asset))
     print(indent + "name      : {name}".format(i=i, **asset))
     print(indent + "state     : {state}".format(i=i, **asset))
     print(indent + "uploader  : {login}".format(i=i, **asset['uploader']))
