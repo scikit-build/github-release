@@ -1,3 +1,15 @@
+Next Release
+============
+
+Features (CLI and Python API)
+-----------------------------
+
+* ``asset`` and ``release`` command:
+
+  * Asset information reporting using sub-commands like ``list`` or ``info`` now
+    include the asset ``ID``.
+
+
 1.5.5
 =====
 
