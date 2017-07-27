@@ -289,26 +289,43 @@ def _update_release_sha(repo_name, tag_name, new_release_sha, dry_run):
     if not refs:
         return
     assert len(refs) == 1
+
+    # If sha associated with "<tag_name>" is up-to-date, we are done.
     previous_release_sha = refs[0]["object"]["sha"]
     if previous_release_sha == new_release_sha:
         return
+
     tmp_tag_name = tag_name + "-tmp"
 
+    # If any, remove leftover temporary tag "<tag_name>-tmp"
+    refs = get_refs(repo_name, tags=True, pattern="refs/tags/%s" % tmp_tag_name)
+    if refs:
+        assert len(refs) == 1
+        time.sleep(0.1)
+        gh_ref_delete(repo_name,
+                      "refs/tags/%s" % tmp_tag_name, dry_run=dry_run)
+
+    # Update "<tag_name>" release by associating it with the "<tag_name>-tmp"
+    # and "<new_release_sha>". It will create the temporary tag.
     time.sleep(0.1)
     patch_release(repo_name, tag_name,
                   tag_name=tmp_tag_name,
                   target_commitish=new_release_sha,
                   dry_run=dry_run)
 
+    # Now "<tag_name>-tmp" references "<new_release_sha>", remove "<tag_name>"
     time.sleep(0.1)
     gh_ref_delete(repo_name, "refs/tags/%s" % tag_name, dry_run=dry_run)
 
+    # Finally, update "<tag_name>-tmp" release by associating it with the
+    # "<tag_name>" and "<new_release_sha>".
     time.sleep(0.1)
     patch_release(repo_name, tmp_tag_name,
                   tag_name=tag_name,
                   target_commitish=new_release_sha,
                   dry_run=dry_run)
 
+    # ... and remove "<tag_name>-tmp"
     time.sleep(0.1)
     gh_ref_delete(repo_name,
                   "refs/tags/%s" % tmp_tag_name, dry_run=dry_run)
@@ -356,6 +373,7 @@ def patch_release(repo_name, current_tag_name, **values):
             headers={'Content-Type': 'application/json'})
         response.raise_for_status()
 
+    # In case a new tag name was provided, remove the old one.
     if current_tag_name != data["tag_name"]:
         gh_ref_delete(
             repo_name, "refs/tags/%s" % current_tag_name,

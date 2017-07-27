@@ -1,3 +1,15 @@
+1.5.6
+=====
+
+Issues (CLI and Python API)
+---------------------------
+
+* ``release`` command:
+
+  * ``edit``: If any, remove leftover temporary tag and
+    avoid ``Release with tag_name latest-tmp not found`` exception.
+
+
 1.5.5
 =====
 
