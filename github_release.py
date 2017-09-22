@@ -472,8 +472,8 @@ def gh_release_create(repo_name, tag_name, asset_pattern=None, name=None,
 @click.option("--target-commitish", default=None)
 @click.option("--name", default=None)
 @click.option("--body", default=None)
-@click.option("--draft", is_flag=True, default=None)
-@click.option("--prerelease", is_flag=True, default=None)
+@click.option("--draft/--publish", is_flag=True, default=None)
+@click.option("--prerelease/--release", is_flag=True, default=None)
 @click.option("--dry-run", is_flag=True, default=False)
 @click.option("--verbose", is_flag=True, default=False)
 @click.pass_obj
