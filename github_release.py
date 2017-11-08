@@ -1026,6 +1026,25 @@ def gh_ref_delete(repo_name, pattern, keep_pattern=None, tags=False,
 
 
 #
+# Commits
+#
+
+def gh_commit_get(repo_name, sha):
+    try:
+        response = _request(
+            'GET',
+            GITHUB_API + '/repos/{0}/git/commits/{1}'.format(repo_name, sha))
+        response.raise_for_status()
+        return response.json()
+    except requests.exceptions.HTTPError as exc_info:
+        response = exc_info.response
+        if response.status_code == 404:
+            return None
+        else:
+            raise
+
+
+#
 # Script entry point
 #
 

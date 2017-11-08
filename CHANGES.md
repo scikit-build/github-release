@@ -4,7 +4,6 @@ Next Release
 Features (CLI and Python API)
 -----------------------------
 
-
 * ``release`` command:
 
   * ``edit``:
@@ -12,6 +11,10 @@ Features (CLI and Python API)
     * Add ``--publish`` flag having opposite effect of ``--draft``
     * Add ``--release`` flag having opposite effect of ``--prerelease``
 
+Python API
+----------
+
+* Add ``gh_commit_get`` allowing to commit properties or check if a commit exists.
 
 1.5.6
 =====
