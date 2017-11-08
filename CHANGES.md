@@ -1,5 +1,5 @@
-Next Release
-============
+1.5.7
+=====
 
 Features (CLI and Python API)
 -----------------------------
