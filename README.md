@@ -194,8 +194,8 @@ It understands the following commands:
   --target-commitish TARGET_COMMITISH
   --name NAME
   --body BODY
-  --draft
-  --prerelease
+  --draft/--publish
+  --prerelease/--release
   --dry-run
   --verbose
 ```

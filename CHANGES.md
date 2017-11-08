@@ -1,3 +1,18 @@
+Next Release
+============
+
+Features (CLI and Python API)
+-----------------------------
+
+
+* ``release`` command:
+
+  * ``edit``:
+
+    * Add ``--publish`` flag having opposite effect of ``--draft``
+    * Add ``--release`` flag having opposite effect of ``--prerelease``
+
+
 1.5.6
 =====
 
