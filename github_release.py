@@ -217,6 +217,17 @@ def gh_ref(ctx, repo_name):
     ctx.obj = repo_name
 
 
+@main.group("commit")
+@click.argument('repo_name', metavar="REPOSITORY")
+@click.pass_context
+@handle_http_error
+def gh_commit(ctx, repo_name):
+    """Manage commits (get) for
+    REPOSITORY (e.g jcfr/sandbox)
+    """
+    ctx.obj = repo_name
+
+
 #
 # Releases
 #
@@ -1028,6 +1039,18 @@ def gh_ref_delete(repo_name, pattern, keep_pattern=None, tags=False,
 #
 # Commits
 #
+
+@gh_commit.command("get")
+@click.argument("sha")
+@click.pass_obj
+def _cli_commit_get(*args, **kwargs):
+    """Get commit properties"""
+    commit = gh_commit_get(*args, **kwargs)
+    if commit is None:
+        print('could not find commit {0}'.format(kwargs['sha']))
+        return
+    print(commit)
+
 
 def gh_commit_get(repo_name, sha):
     try:
