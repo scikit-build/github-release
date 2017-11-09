@@ -1,6 +1,11 @@
 Next Release
 ============
 
+Documentation
+-------------
+
+* Improve README section [maintainers: how to make a release ?](./README.md#maintainers-how-to-make-a-release-)
+
 1.5.7
 =====
 

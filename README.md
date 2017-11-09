@@ -344,64 +344,107 @@ that has already been intercepted and recorded.
 
 1. Configure `~/.pypirc` as described [here](https://packaging.python.org/distributing/#uploading-your-project-to-pypi).
 
-2. Make sure the cli and module work as expected
+2. Make sure the cli and module work as expected.
 
-3. Review [CHANGES.md](https://github.com/j0057/github-release/blob/master/README.md), replace *Next Release* into *X.Y.Z*, commit and push. Consider using `[ci skip]` in commit message.
+3. Choose the next release version number:
 
-4. Tag the release. Requires a GPG key with signatures. For version *X.Y.Z*:
+   ```bash
+   release="X.Y.Z"
+   ```
+
+4. Review [CHANGES.md](https://github.com/j0057/github-release/blob/master/README.md), replace *Next Release* into *X.Y.Z*, commit and push. Consider using `[ci skip]` in commit message:
+
+   ```bash
+   sed -i -e "s/Next Release/${release}/" CHANGES.md
+   sed -i -e "s/============/=====/" CHANGES.md
+   git add CHANGES.md
+   git commit -m "CHANGES.md: Replace \"Next Release\" with \"${release}\"
+
+   [ci skip]
+   "
+   ```
+
+   Review commit, then push:
+
+   ```bash
+   git push origin master
+   ```
+
+5. Tag the release. Requires a GPG key with signatures:
 
     ```bash
-    git tag -s -m "githubrelease X.Y.Z" X.Y.Z origin/master
+    git tag -s -m "githubrelease ${release}" ${release} origin/master
     ```
 
-5. Create the source tarball and binary wheels:
+    And push:
+
+    ```bash
+    git push origin ${release}
+    ```
+
+6. Create the source tarball and binary wheels:
 
     ```bash
     rm -rf dist/
     python setup.py sdist bdist_wheel
     ```
 
-6. Upload the packages to the testing PyPI instance:
+7. Upload the packages to the testing PyPI instance:
 
     ```bash
     twine upload --sign -r pypitest dist/*
     ```
 
-7. Check the [PyPI testing package page](https://testpypi.python.org/pypi/githubrelease/).
+8. Check the [PyPI testing package page](https://testpypi.python.org/pypi/githubrelease/).
 
-8. Upload the packages to the PyPI instance::
+9. Upload the packages to the PyPI instance::
 
     ```bash
     twine upload --sign dist/*
     ```
 
-9. Check the [PyPI package page](https://pypi.python.org/pypi/githubrelease/).
+10. Check the [PyPI package page](https://pypi.python.org/pypi/githubrelease/).
 
-10. Create a virtual env, and make sure the package can be installed:
+11. Create a virtual env, and make sure the package can be installed:
 
     ```bash
     mkvirtualenv test-githubrelease-install
     pip install githubrelease
     ```
 
-11. Create github release and upload packages:
+12. Create github release and upload packages:
 
     ```bash
     export GITHUB_TOKEN=YOUR_TOKEN
-    githubrelease release j0057/github-release create X.Y.Z --name X.Y.Z --publish ./dist/*
+    githubrelease release j0057/github-release create ${release} --name ${release} --publish ./dist/*
     ```
 
-12. Update release notes by copying relevant content from CHANGES.md
+13. Update release notes by copying relevant content from CHANGES.md
 
     ```bash
     export EDITOR=vim
-    githubrelease release j0057/github-release release-notes X.Y.Z
+    githubrelease release j0057/github-release release-notes ${release}
     ```
 
-13. Cleanup
+14. Cleanup
 
     ```bash
+    deactivate
     rmvirtualenv test-githubrelease-install
+    ```
+
+    And update ``CHANGES.md``:
+
+    ```bash
+    sed -i '1i Next Release\n============\n' CHANGES.md
+    git add CHANGES.md
+    git commit -m "Begin ${release} development
+
+    * CHANGES.md: Add \"Next Release\" section
+
+   [ci skip]
+   "
+   git push origin master
     ```
 
 # faq
