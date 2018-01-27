@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 
 import pytest
 
@@ -50,7 +51,7 @@ from . import push_argv
     ([], "release", "edit", ["1.0.0", "--tag-name", "new_tag",
                                       "--target-commitish", "1234567",
                                       "--name", "new_name",
-                                      "--body", "new_body"]),
+                                      "--body", u"new_body with utf-8 char …"]),
     ([], "release", "delete", ["1.0.0"]),
     ([], "release", "delete", ["*a", "--keep-pattern", "1*"]),
     ([], "release", "publish", ["1.0.0"]),
