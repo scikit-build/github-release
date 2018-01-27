@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 
 import pytest
 
@@ -137,7 +138,7 @@ def test_edit_name_and_body(release_type):
     # Edit release
     ghr.gh_release_edit(
         REPO_NAME, "0.1.0",
-        name="name-edited", body="body-edited"
+        name="name-edited", body=u"body-edited with utf-8 char …"
     )
 
     assert (check_releases([
@@ -145,7 +146,7 @@ def test_edit_name_and_body(release_type):
          "draft": params["draft"],
          "prerelease": params["prerelease"],
          "name": "name-edited",
-         "body": "body-edited"},
+         "body": u"body-edited with utf-8 char …"},
     ]))
 
 
