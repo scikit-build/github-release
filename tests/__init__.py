@@ -148,8 +148,11 @@ def run(*popenargs, **kwargs):
 #
 
 def read_version_file():
-    with open("VERSION") as content:
-        return content.readline().strip()
+    try:
+        with open("VERSION") as content:
+            return content.readline().strip()
+    except IOError:
+        return None
 
 
 #
@@ -258,6 +261,8 @@ def do_commit(version=None, branch=None, release_tag=None, push=False):
     commit_date = generate_commit_date()
     if version is None:
         version = read_version_file()
+        if version is None:
+            version = "0.0.0"
     msg = "Update to %s.dev%s" % (version, commit_date.strftime("%Y%m%d"))
     if release_tag is not None:
         msg = "%s %s" % (PROJECT_NAME, release_tag)
