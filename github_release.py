@@ -1,8 +1,6 @@
 #!/usr/bin/env python2.7
-# -*- coding: utf-8 -*-
 
 from __future__ import print_function
-from __future__ import unicode_literals
 
 import fnmatch
 import glob
@@ -356,12 +354,20 @@ def patch_release(repo_name, current_tag_name, **values):
     }
 
     updated = []
+
     for key in data:
         if key in values and data[key] != values[key]:
             updated.append("%s: '%s' -> '%s'" % (key, data[key], values[key]))
+
+    print("===============")
+    print(updated)
+    for s in updated:
+        print("%s %s" % (s, type(s)))
+        print("teste %s" % type("teste"))
+    print("===============")
     if updated:
         print("updating '%s' release: \n  %s" % (
-            current_tag_name, "\n  ".join(updated)))
+            current_tag_name, u"\n  ".join(updated)))
         print("")
 
     data.update(values)
