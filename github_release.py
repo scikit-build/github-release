@@ -359,12 +359,12 @@ def patch_release(repo_name, current_tag_name, **values):
         if key in values and data[key] != values[key]:
             updated.append("%s: '%s' -> '%s'" % (key, data[key], values[key]))
 
-    print("===============")
+    print("==============")
     print(updated)
     for s in updated:
         print("%s %s" % (s, type(s)))
         print("teste %s" % type("teste"))
-    print("===============")
+    print("==============")
     if updated:
         print("updating '%s' release: \n  %s" % (
             current_tag_name, u"\n  ".join(updated)))
