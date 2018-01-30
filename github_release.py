@@ -354,12 +354,23 @@ def patch_release(repo_name, current_tag_name, **values):
     }
 
     updated = []
+
     for key in data:
         if key in values and data[key] != values[key]:
+            #print(data[key])
+            #print(values[key])
+            #print(type(values[key]))
             updated.append("%s: '%s' -> '%s'" % (key, data[key], values[key]))
+
+    import sys; print(sys.stdout.encoding)
+    print('')
+    print('Updated len: %s' % len(updated))
     if updated:
+        for x in updated:
+            print(type(x))
+            print(x.encode('utf8'))
         print("updating '%s' release: \n  %s" % (
-            current_tag_name, "\n  ".join(updated)))
+              current_tag_name, "\n  ".join(updated)))
         print("")
 
     data.update(values)
@@ -370,7 +381,7 @@ def patch_release(repo_name, current_tag_name, **values):
         response = _request(
             'PATCH', url,
             data=json.dumps(data),
-            headers={'Content-Type': 'application/json'})
+            headers={'Content-Type': 'application/json; charset=utf-8'})
         response.raise_for_status()
 
     # In case a new tag name was provided, remove the old one.
@@ -456,7 +467,7 @@ def gh_release_create(repo_name, tag_name, asset_pattern=None, name=None,
         response = _request(
               'POST', GITHUB_API + '/repos/{0}/releases'.format(repo_name),
               data=json.dumps(data),
-              headers={'Content-Type': 'application/json'})
+              headers={'Content-Type': 'application/json; charset=utf-8'})
         response.raise_for_status()
         print_release_info(response.json(),
                            title="created '%s' release" % tag_name)
@@ -983,7 +994,7 @@ def gh_ref_create(repo_name, reference, sha):
     response = _request(
           'POST', GITHUB_API + '/repos/{0}/git/refs'.format(repo_name),
           data=json.dumps(data),
-          headers={'Content-Type': 'application/json'})
+          headers={'Content-Type': 'application/json; charset=utf-8'})
     response.raise_for_status()
     print_ref_info(response.json())
 
