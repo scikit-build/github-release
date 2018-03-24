@@ -106,6 +106,28 @@ def test_create_release_custom_name(gh_src_dir):
 @git_user_name_required
 @github_token_required
 @integration_test_repo_name_required
+def test_create_release_custom_body(gh_src_dir):
+    with push_dir(gh_src_dir):
+        do_commit(push=True)  # 2017-01-02
+
+        # Create release
+        ghr.gh_release_create(
+            REPO_NAME, "0.1.0", publish=True, body="Quite awesome."
+        )
+
+        # Fetch changes
+        run("git fetch origin")
+
+        assert (check_releases([
+            {"tag_name": "0.1.0", "body": "Quite awesome.", "tag_date": "20170102",
+             "draft": False, "prerelease": False},
+        ]))
+
+
+@git_user_email_required
+@git_user_name_required
+@github_token_required
+@integration_test_repo_name_required
 def test_create_prerelease_target_commitish(gh_src_dir):
     with push_dir(gh_src_dir):
         do_commit()  # 2017-01-02
