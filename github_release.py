@@ -430,6 +430,7 @@ def _cli_release_info(repo_name, tag_name):
 @click.option("--prerelease", is_flag=True, default=False)
 @click.option("--dry-run", is_flag=True, default=False)
 @click.option("--target-commitish")
+@click.option("--body", default=None)
 @click.pass_obj
 def cli_release_create(*args, **kwargs):
     """Create a release"""
@@ -439,7 +440,7 @@ def cli_release_create(*args, **kwargs):
 @_check_for_credentials
 def gh_release_create(repo_name, tag_name, asset_pattern=None, name=None,
                       publish=False, prerelease=False,
-                      target_commitish=None, dry_run=False):
+                      target_commitish=None, dry_run=False, body=None):
     if get_release(repo_name, tag_name) is not None:
         print('release %s: already exists\n' % tag_name)
         return
@@ -450,6 +451,8 @@ def gh_release_create(repo_name, tag_name, asset_pattern=None, name=None,
     }
     if name is not None:
         data["name"] = name
+    if body is not None:
+        data["body"] = body
     if target_commitish is not None:
         data["target_commitish"] = target_commitish
     if not dry_run:
