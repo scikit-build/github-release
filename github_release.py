@@ -426,6 +426,7 @@ def _cli_release_info(repo_name, tag_name):
 @click.argument("tag_name")
 @click.argument("asset_pattern", nargs=-1)
 @click.option("--name")
+@click.option("--body", default=None)
 @click.option("--publish", is_flag=True, default=False)
 @click.option("--prerelease", is_flag=True, default=False)
 @click.option("--dry-run", is_flag=True, default=False)
@@ -437,7 +438,7 @@ def cli_release_create(*args, **kwargs):
 
 
 @_check_for_credentials
-def gh_release_create(repo_name, tag_name, asset_pattern=None, name=None,
+def gh_release_create(repo_name, tag_name, asset_pattern=None, name=None, body=None,
                       publish=False, prerelease=False,
                       target_commitish=None, dry_run=False):
     if get_release(repo_name, tag_name) is not None:
@@ -450,6 +451,8 @@ def gh_release_create(repo_name, tag_name, asset_pattern=None, name=None,
     }
     if name is not None:
         data["name"] = name
+    if body is not None:
+        data["body"] = body
     if target_commitish is not None:
         data["target_commitish"] = target_commitish
     if not dry_run:
