@@ -181,6 +181,7 @@ It understands the following commands:
 
 ```bash
   --name NAME
+  --body BODY
   --publish
   --prerelease
   --target-commitish TARGET_COMMITISH
