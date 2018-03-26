@@ -1,6 +1,15 @@
 Next Release
 ============
 
+Features (CLI and Python API)
+-----------------------------
+
+* ``release`` command:
+
+  * ``create``:
+
+    * Add support for ``--body``. Contributed by [@bstansell](https://github.com/bstansell)
+
 Documentation
 -------------
 

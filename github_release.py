@@ -426,11 +426,11 @@ def _cli_release_info(repo_name, tag_name):
 @click.argument("tag_name")
 @click.argument("asset_pattern", nargs=-1)
 @click.option("--name")
+@click.option("--body", default=None)
 @click.option("--publish", is_flag=True, default=False)
 @click.option("--prerelease", is_flag=True, default=False)
 @click.option("--dry-run", is_flag=True, default=False)
 @click.option("--target-commitish")
-@click.option("--body", default=None)
 @click.pass_obj
 def cli_release_create(*args, **kwargs):
     """Create a release"""
