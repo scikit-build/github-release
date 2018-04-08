@@ -28,6 +28,7 @@ setup(
     description='githubrelease is a CLI to easily manage GitHub releases, '
                 'assets and references',
     long_description=readme,
+    long_description_content_type='text/markdown; charset=UTF-8',
 
     url='https://github.com/j0057/github-release',
 
