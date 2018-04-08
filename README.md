@@ -396,7 +396,7 @@ that has already been intercepted and recorded.
     twine upload --sign -r pypitest dist/*
     ```
 
-8. Check the [PyPI testing package page](https://testpypi.python.org/pypi/githubrelease/).
+8. Check the [PyPI testing package page](https://test.pypi.org/project/githubrelease/).
 
 9. Upload the packages to the PyPI instance::
 
@@ -404,7 +404,7 @@ that has already been intercepted and recorded.
     twine upload --sign dist/*
     ```
 
-10. Check the [PyPI package page](https://pypi.python.org/pypi/githubrelease/).
+10. Check the [PyPI package page](https://pypi.org/project/githubrelease/).
 
 11. Create a virtual env, and make sure the package can be installed:
 
@@ -443,9 +443,9 @@ that has already been intercepted and recorded.
 
     * CHANGES.md: Add \"Next Release\" section
 
-   [ci skip]
-   "
-   git push origin master
+    [ci skip]
+    "
+    git push origin master
     ```
 
 # faq
