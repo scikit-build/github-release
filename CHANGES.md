@@ -15,6 +15,12 @@ Documentation
 
 * Improve README section [maintainers: how to make a release ?](./README.md#maintainers-how-to-make-a-release-)
 
+Testing
+-------
+
+* Fix tests when no VERSION file exists. See [PR#44](https://github.com/j0057/github-release/pull/44). Contributed by [@lucasbrunialti](https://github.com/lucasbrunialti).
+* flake8: Increase max line length from 80 to 120.
+
 1.5.7
 =====
 
