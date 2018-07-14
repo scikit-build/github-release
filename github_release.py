@@ -162,6 +162,14 @@ def _recursive_gh_get(href, items):
         _recursive_gh_get(rels["next"], items)
 
 
+def _validate_repo_name(ctx, param, value):
+    """Callback used to check if repository argument was given."""
+    if "/" not in value:
+        raise click.BadParameter('Expected format for REPOSITORY is '
+                                 '"<org_name>/<project_name>" (e.g "jcfr/sandbox")')
+    return value
+
+
 @click.group()
 @click.option("--github-token", envvar='GITHUB_TOKEN', default=None,
               help="[default: GITHUB_TOKEN env. variable]")
@@ -178,7 +186,7 @@ def main(github_token, progress):
 
 
 @main.group("release")
-@click.argument('repo_name', metavar="REPOSITORY")
+@click.argument('repo_name', metavar="REPOSITORY", callback=_validate_repo_name)
 @click.pass_context
 @handle_http_error
 def gh_release(ctx, repo_name):
@@ -196,7 +204,7 @@ class AssetGroup(click.Group):
 
 
 @main.group("asset", cls=AssetGroup)
-@click.argument('repo_name', metavar="REPOSITORY")
+@click.argument('repo_name', metavar="REPOSITORY", callback=_validate_repo_name)
 @click.pass_context
 @handle_http_error
 def gh_asset(ctx, repo_name):
@@ -207,7 +215,7 @@ def gh_asset(ctx, repo_name):
 
 
 @main.group("ref")
-@click.argument('repo_name', metavar="REPOSITORY")
+@click.argument('repo_name', metavar="REPOSITORY", callback=_validate_repo_name)
 @click.pass_context
 @handle_http_error
 def gh_ref(ctx, repo_name):
