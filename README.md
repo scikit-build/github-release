@@ -1,6 +1,6 @@
 # githubrelease
 
-[![Build Status](https://img.shields.io/travis/j0057/github-release.svg?maxAge=2592000)](https://travis-ci.org/j0057/github-release)
+[![Build Status](https://travis-ci.org/j0057/github-release.svg?branch=master)](https://travis-ci.org/j0057/github-release)
 
 This project aims at streamlining the distribution of
 [releases](https://github.com/blog/1547-release-your-software) on Github.
