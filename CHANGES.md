@@ -1,6 +1,13 @@
 Next Release
 ============
 
+CLI
+---
+
+* Add validation for the REPOSITORY argument. Report an informative message if user
+  omitted it.
+
+
 1.5.8
 =====
 
