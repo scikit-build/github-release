@@ -2,6 +2,7 @@
 
 from __future__ import print_function
 
+from datetime import tzinfo, timedelta, datetime
 import fnmatch
 import glob
 import json
@@ -25,6 +26,21 @@ REQ_BUFFER_SIZE = 65536  # Chunk size when iterating a download body
 
 _github_token_cli_arg = None
 _github_api_url = None
+
+
+class _UTC(tzinfo):
+    """UTC"""
+
+    ZERO = timedelta(0)
+
+    def utcoffset(self, dt):
+        return self.ZERO
+
+    def tzname(self, dt):
+        return "UTC"
+
+    def dst(self, dt):
+        return self.ZERO
 
 
 class _NoopProgressReporter(object):
@@ -528,6 +544,7 @@ def gh_release_edit(repo_name, current_tag_name,
 @click.argument("pattern")
 @click.option("--keep-pattern")
 @click.option("--release-type", type=click.Choice(['all', 'draft', 'prerelease', 'release']), default='all')
+@click.option("--older-than", type=int, default=0)
 @click.option("--dry-run", is_flag=True, default=False)
 @click.option("--verbose", is_flag=True, default=False)
 @click.pass_obj
@@ -537,7 +554,7 @@ def _cli_release_delete(*args, **kwargs):
 
 
 @_check_for_credentials
-def gh_release_delete(repo_name, pattern, keep_pattern=None, release_type='all',
+def gh_release_delete(repo_name, pattern, keep_pattern=None, release_type='all', older_than=0,
                       dry_run=False, verbose=False):
     releases = get_releases(repo_name)
     candidates = []
@@ -555,6 +572,16 @@ def gh_release_delete(repo_name, pattern, keep_pattern=None, release_type='all',
             if verbose:
                 print('skipping release {0}: type {1} is not {2}'.format(
                     release['tag_name'], get_release_type(release), release_type))
+            continue
+        # Assumes Zulu time.
+        # See https://stackoverflow.com/questions/127803/how-to-parse-an-iso-8601-formatted-date
+        utc = _UTC()
+        rel_date = datetime.strptime(release['created_at'], "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=utc)
+        rel_age = int((datetime.now(utc) - rel_date).total_seconds() / 60 / 60)  # In hours
+        if older_than > rel_age:
+            if verbose:
+                print('skipping release {0}: created less than {1} hours ago ({2}hrs)'.format(
+                    release['tag_name'], older_than, rel_age))
             continue
         candidates.append(release)
     for release in candidates:
