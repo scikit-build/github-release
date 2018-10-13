@@ -538,9 +538,8 @@ def gh_release_delete(repo_name, pattern, keep_pattern=None,
         if keep_pattern is not None:
             if fnmatch.fnmatch(release['tag_name'], keep_pattern):
                 continue
-        candidates.append(release['tag_name'])
-    for tag_name in candidates:
-        release = get_release(repo_name, tag_name)
+        candidates.append(release)
+    for release in candidates:
         print('deleting release {0}'.format(release['tag_name']))
         if dry_run:
             continue

@@ -20,6 +20,10 @@ Issues (CLI and Python API)
 
     * Fix use python 3 support
 
+  * ``delete`` command:
+
+    * Speed-up release deletion. See [PR#51](https://github.com/j0057/github-release/pull/51). Contributed by [@Flamefire](https://github.com/Flamefire)
+
 1.5.8
 =====
 
