@@ -201,6 +201,16 @@ It understands the following commands:
   --verbose
 ```
 
+* delete:
+
+```bash
+  --keep-pattern KEEP_PATTERN
+  --type [all, draft, prerelease, release]
+  --older-than HOURS
+  --dry-run
+  --verbose
+```
+
 
 ## ``asset`` command
 
