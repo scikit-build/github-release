@@ -11,6 +11,17 @@ CLI
 
   * ``release-notes``: Report a meaningful error if user omitted to set ``EDITOR`` env. variable.
 
+
+Features (CLI and Python API)
+-----------------------------
+
+* ``delete`` command:
+
+  * `delete`:
+
+    * Add support for ``--release-type``. Fix issue [#50](https://github.com/j0057/github-release/pull/50). Contributed by [@Flamefire](https://github.com/Flamefire).
+
+
 Issues (CLI and Python API)
 ---------------------------
 
