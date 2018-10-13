@@ -29,6 +29,8 @@ REQ_BUFFER_SIZE = 65536  # Chunk size when iterating a download body
 _github_token_cli_arg = None
 
 ZERO = timedelta(0)
+
+
 class UTC(tzinfo):
     """UTC"""
 
@@ -40,6 +42,8 @@ class UTC(tzinfo):
 
     def dst(self, dt):
         return ZERO
+
+
 utc = UTC()
 
 
@@ -571,7 +575,7 @@ def gh_release_delete(repo_name, pattern, keep_pattern=None, type='all', older_t
         # Assumes Zulu time.
         # See https://stackoverflow.com/questions/127803/how-to-parse-an-iso-8601-formatted-date
         rel_date = datetime.strptime(release['created_at'], "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=utc)
-        rel_age = int((datetime.now(utc) - rel_date).total_seconds() / 60 / 60) # In hours
+        rel_age = int((datetime.now(utc) - rel_date).total_seconds() / 60 / 60)  # In hours
         if older_than > rel_age:
             if verbose:
                 print('skipping release {0}: created less than {1} hours ago ({2}hrs)'.format(
