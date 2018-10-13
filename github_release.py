@@ -251,6 +251,18 @@ def print_release_info(release, title=None, indent=""):
         print_asset_info(i, asset, indent=indent)
 
 
+def get_release_type(release):
+    """Return the type of the release
+
+    Either 'draft', 'prerelease' (no draft) or 'release' (neither)
+    """
+    if release['draft']:
+        return 'draft'
+    if release['prerelease']:
+        return 'prerelease'
+    return 'release'
+
+
 def get_releases(repo_name, verbose=False):
 
     releases = []
@@ -511,6 +523,7 @@ def gh_release_edit(repo_name, current_tag_name,
 @gh_release.command("delete")
 @click.argument("pattern")
 @click.option("--keep-pattern")
+@click.option("--type", type=click.Choice(['all', 'draft', 'prerelease', 'release']), default='all')
 @click.option("--dry-run", is_flag=True, default=False)
 @click.option("--verbose", is_flag=True, default=False)
 @click.pass_obj
@@ -520,7 +533,7 @@ def _cli_release_delete(*args, **kwargs):
 
 
 @_check_for_credentials
-def gh_release_delete(repo_name, pattern, keep_pattern=None,
+def gh_release_delete(repo_name, pattern, keep_pattern=None, type='all',
                       dry_run=False, verbose=False):
     releases = get_releases(repo_name)
     candidates = []
@@ -534,6 +547,11 @@ def gh_release_delete(repo_name, pattern, keep_pattern=None,
         if keep_pattern is not None:
             if fnmatch.fnmatch(release['tag_name'], keep_pattern):
                 continue
+        if type and type != 'all' and type != get_release_type(release):
+            if verbose:
+                print('skipping release {0}: type {1} is not {2}'.format(
+                    release['tag_name'], get_release_type(release), type))
+            continue
         candidates.append(release['tag_name'])
     for tag_name in candidates:
         release = get_release(repo_name, tag_name)
