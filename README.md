@@ -185,6 +185,7 @@ It understands the following commands:
   --publish
   --prerelease
   --target-commitish TARGET_COMMITISH
+  --help
   [ASSET_PATTERN]...
 ```
 
@@ -199,8 +200,19 @@ It understands the following commands:
   --prerelease/--release
   --dry-run
   --verbose
+  --help
 ```
 
+* delete:
+
+```bash
+  --keep-pattern KEEP_PATTERN
+  --type [all, draft, prerelease, release]
+  --dry-run
+  --verbose
+  --help
+  [ASSET_PATTERN]...
+```
 
 ## ``asset`` command
 
