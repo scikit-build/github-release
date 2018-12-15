@@ -595,6 +595,10 @@ def gh_release_notes(repo_name, tag_name):
                 if sys.version_info[0] >= 3:
                     body = body.encode('utf-8')
                 f.write(body)
+        if 'EDITOR' not in os.environ:
+            raise EnvironmentError(
+                "This command requires editor set using EDITOR "
+                "env. variable.")
         ret = os.system('{0} {1}'.format(os.environ['EDITOR'], filename))
         if ret:
             raise Exception(
