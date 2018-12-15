@@ -7,6 +7,18 @@ CLI
 * Add validation for the REPOSITORY argument. Report an informative message if user
   omitted it.
 
+* ``release`` command:
+
+  * ``release-notes``: Report a meaningful error if user omitted to set ``EDITOR`` env. variable.
+
+Issues (CLI and Python API)
+---------------------------
+
+* ``release`` command:
+
+  * ``release-notes``:
+
+    * Fix use python 3 support
 
 1.5.8
 =====
