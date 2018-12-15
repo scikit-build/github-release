@@ -7,6 +7,14 @@ CLI
 * Add validation for the REPOSITORY argument. Report an informative message if user
   omitted it.
 
+Issues (CLI and Python API)
+---------------------------
+
+* ``release`` command:
+
+  * ``release-notes``:
+
+    * Fix use python 3 support
 
 1.5.8
 =====

@@ -591,13 +591,18 @@ def gh_release_notes(repo_name, tag_name):
     try:
         if release['body']:
             with open(filename, 'w+b') as f:
-                f.write(release['body'])
+                body = release['body']
+                if sys.version_info[0] >= 3:
+                    body = body.encode('utf-8')
+                f.write(body)
         ret = os.system('{0} {1}'.format(os.environ['EDITOR'], filename))
         if ret:
             raise Exception(
                 '{0} returned exit code {1}'.format(os.environ['EDITOR'], ret))
         with open(filename, 'rb') as f:
             body = f.read()
+            if sys.version_info[0] >= 3:
+                body = body.decode('utf-8')
         if release['body'] == body:
             return
         patch_release(repo_name, tag_name, body=body)
