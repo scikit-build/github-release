@@ -19,7 +19,7 @@ Features (CLI and Python API)
 
   * `delete`:
 
-    * Add support for ``--release-type``. Fix issue [#50](https://github.com/j0057/github-release/pull/50). Contributed by [@Flamefire](https://github.com/Flamefire).
+    * Add support for ``--release-type`` and ``--older-than``. Fix issue [#50](https://github.com/j0057/github-release/pull/50). Contributed by [@Flamefire](https://github.com/Flamefire).
 
 
 Issues (CLI and Python API)

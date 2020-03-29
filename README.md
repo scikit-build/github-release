@@ -208,6 +208,7 @@ It understands the following commands:
 ```bash
   --keep-pattern KEEP_PATTERN
   --type [all, draft, prerelease, release]
+  --older-than HOURS
   --dry-run
   --verbose
   --help
