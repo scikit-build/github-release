@@ -120,7 +120,7 @@ def _check_for_credentials(func):
     @wraps(func)
     def with_check_for_credentials(*args, **kwargs):
         has_github_token_env_var = "GITHUB_TOKEN" in os.environ
-        has_netrc = requests.utils.get_netrc_auth(_github_api_url)
+        has_netrc = requests.utils.get_netrc_auth(github_api_url())
         if (not _github_token_cli_arg
                 and not has_github_token_env_var and not has_netrc):
             raise EnvironmentError(
@@ -185,6 +185,10 @@ def _validate_repo_name(ctx, param, value):
     return value
 
 
+#
+# CLI
+#
+
 @click.group()
 @click.option("--github-token", envvar='GITHUB_TOKEN', default=None,
               help="[default: GITHUB_TOKEN env. variable]")
@@ -201,8 +205,7 @@ def main(github_token, github_api_url, progress):
         progress_reporter_cls = _progress_bar
     global _github_token_cli_arg
     _github_token_cli_arg = github_token
-    global _github_api_url
-    _github_api_url = github_api_url
+    set_github_api_url(github_api_url)
 
 
 @main.group("release")
@@ -243,6 +246,28 @@ def gh_ref(ctx, repo_name):
     REPOSITORY (e.g jcfr/sandbox)
     """
     ctx.obj = repo_name
+
+
+#
+# General
+#
+
+def github_api_url():
+    """Return GitHub API URL.
+
+    If no URL has been set, return https://api.github.com unless the
+    GITHUB_API_URL environment variable has been set.
+    """
+    if _github_api_url is None:
+        return os.environ.get('GITHUB_API_URL', 'https://api.github.com')
+    return _github_api_url
+
+
+def set_github_api_url(url):
+    """Set GitHub API URL.
+    """
+    global _github_api_url
+    _github_api_url = url
 
 
 #
@@ -287,7 +312,7 @@ def get_releases(repo_name, verbose=False):
 
     releases = []
     _recursive_gh_get(
-        _github_api_url + '/repos/{0}/releases'.format(repo_name), releases)
+        github_api_url() + '/repos/{0}/releases'.format(repo_name), releases)
 
     if verbose:
         list(map(print_release_info,
@@ -405,7 +430,7 @@ def patch_release(repo_name, current_tag_name, **values):
     data.update(values)
 
     if not dry_run:
-        url = _github_api_url + '/repos/{0}/releases/{1}'.format(
+        url = github_api_url() + '/repos/{0}/releases/{1}'.format(
             repo_name, release['id'])
         response = _request(
             'PATCH', url,
@@ -426,7 +451,7 @@ def get_assets(repo_name, tag_name, verbose=False):
         raise Exception('Release with tag_name {0} not found'.format(tag_name))
 
     assets = []
-    _recursive_gh_get(_github_api_url + '/repos/{0}/releases/{1}/assets'.format(
+    _recursive_gh_get(github_api_url() + '/repos/{0}/releases/{1}/assets'.format(
         repo_name, release["id"]), assets)
 
     if verbose:
@@ -497,7 +522,7 @@ def gh_release_create(repo_name, tag_name, asset_pattern=None, name=None, body=N
         data["target_commitish"] = target_commitish
     if not dry_run:
         response = _request(
-              'POST', _github_api_url + '/repos/{0}/releases'.format(repo_name),
+              'POST', github_api_url() + '/repos/{0}/releases'.format(repo_name),
               data=json.dumps(data),
               headers={'Content-Type': 'application/json'})
         response.raise_for_status()
@@ -588,7 +613,7 @@ def gh_release_delete(repo_name, pattern, keep_pattern=None, release_type='all',
         print('deleting release {0}'.format(release['tag_name']))
         if dry_run:
             continue
-        url = (_github_api_url
+        url = (github_api_url()
                + '/repos/{0}/releases/{1}'.format(repo_name, release['id']))
         response = _request('DELETE', url)
         response.raise_for_status()
@@ -731,7 +756,7 @@ def _upload_release_file(
                 print("  deleting %s (invalid asset "
                       "with state set to 'new')" % asset['name'])
                 url = (
-                    _github_api_url
+                    github_api_url()
                     + '/repos/{0}/releases/assets/{1}'.format(
                         repo_name, asset['id'])
                 )
@@ -795,7 +820,7 @@ def gh_asset_upload(repo_name, tag_name, pattern, dry_run=False, verbose=False):
     # Raise exception if no token is specified AND netrc file is found
     # BUT only api.github.com is specified. See #17
     has_github_token = "GITHUB_TOKEN" in os.environ
-    has_netrc = requests.utils.get_netrc_auth(_github_api_url)
+    has_netrc = requests.utils.get_netrc_auth(github_api_url())
     if not has_github_token and has_netrc:
         if requests.utils.get_netrc_auth(upload_url) is None:
             raise EnvironmentError(
@@ -880,7 +905,7 @@ def gh_asset_delete(repo_name, tag_name, pattern,
         if dry_run:
             continue
         url = (
-            _github_api_url
+            github_api_url()
             + '/repos/{0}/releases/assets/{1}'.format(repo_name, asset['id'])
         )
         response = _request('DELETE', url)
@@ -908,7 +933,7 @@ def _cli_asset_download(*args, **kwargs):
 def _download_file(repo_name, asset):
     response = _request(
         method='GET',
-        url=_github_api_url + '/repos/{0}/releases/assets/{1}'.format(
+        url=github_api_url() + '/repos/{0}/releases/assets/{1}'.format(
             repo_name, asset['id']),
         allow_redirects=False,
         headers={'Accept': 'application/octet-stream'},
@@ -978,7 +1003,7 @@ def get_refs(repo_name, tags=None, pattern=None):
 
     refs = []
     _recursive_gh_get(
-        _github_api_url + '/repos/{0}/git/refs'.format(repo_name), refs)
+        github_api_url() + '/repos/{0}/git/refs'.format(repo_name), refs)
 
     # If "tags" is True, keep only "refs/tags/*"
     data = refs
@@ -993,7 +1018,7 @@ def get_refs(repo_name, tags=None, pattern=None):
         try:
             tags = []
             _recursive_gh_get(
-                _github_api_url + '/repos/{0}/git/refs/tags'.format(repo_name), tags)
+                github_api_url() + '/repos/{0}/git/refs/tags'.format(repo_name), tags)
             for ref in tags:
                 if ref["ref"] not in tag_names:
                     data.append(ref)
@@ -1049,7 +1074,7 @@ def gh_ref_create(repo_name, reference, sha):
         'sha': sha
     }
     response = _request(
-          'POST', _github_api_url + '/repos/{0}/git/refs'.format(repo_name),
+          'POST', github_api_url() + '/repos/{0}/git/refs'.format(repo_name),
           data=json.dumps(data),
           headers={'Content-Type': 'application/json'})
     response.raise_for_status()
@@ -1088,7 +1113,7 @@ def gh_ref_delete(repo_name, pattern, keep_pattern=None, tags=False,
             continue
         response = _request(
             'DELETE',
-            _github_api_url + '/repos/{0}/git/{1}'.format(repo_name, ref['ref']))
+            github_api_url() + '/repos/{0}/git/{1}'.format(repo_name, ref['ref']))
         response.raise_for_status()
     return len(removed_refs) > 0
 
@@ -1101,7 +1126,7 @@ def gh_commit_get(repo_name, sha):
     try:
         response = _request(
             'GET',
-            _github_api_url + '/repos/{0}/git/commits/{1}'.format(repo_name, sha))
+            github_api_url() + '/repos/{0}/git/commits/{1}'.format(repo_name, sha))
         response.raise_for_status()
         return response.json()
     except requests.exceptions.HTTPError as exc_info:

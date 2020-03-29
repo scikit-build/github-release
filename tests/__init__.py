@@ -71,6 +71,32 @@ def push_argv(argv):
     sys.argv = old_argv
 
 
+@contextmanager
+def push_env(**kwargs):
+    """This context manager allow to set/unset environment variables.
+    """
+    saved_env = dict(os.environ)
+    for var, value in kwargs.items():
+        if value is not None:
+            os.environ[var] = value
+        elif var in os.environ:
+            del os.environ[var]
+    yield
+    os.environ.clear()
+    for (saved_var, saved_value) in saved_env.items():
+        os.environ[saved_var] = saved_value
+
+
+@contextmanager
+def push_github_api_url(ghr,  url):
+    """This context manager allow to set _github_api_url variable.
+    """
+    saved_url = ghr._github_api_url
+    ghr._github_api_url = url
+    yield
+    ghr._github_api_url = saved_url
+
+
 #
 # Subprocess
 #

@@ -7,9 +7,19 @@ CLI
 * Add validation for the REPOSITORY argument. Report an informative message if user
   omitted it.
 
+* Support customization of the GitHub API URL by passing ``--github-api-url`` parameter or by setting the
+  ``GITHUB_API_URL`` environment variable.
+  See [PR#57](https://github.com/j0057/github-release/pull/57). Contributed by [@furlongm](https://github.com/furlongm)
+
 * ``release`` command:
 
   * ``release-notes``: Report a meaningful error if user omitted to set ``EDITOR`` env. variable.
+
+
+Python API
+----------
+
+* Add ``github_api_url`` and `set_github_api_url`. See [#61](https://github.com/j0057/github-release/issues/61).
 
 
 Features (CLI and Python API)
@@ -34,6 +44,11 @@ Issues (CLI and Python API)
   * ``delete`` command:
 
     * Speed-up release deletion. See [PR#51](https://github.com/j0057/github-release/pull/51). Contributed by [@Flamefire](https://github.com/Flamefire)
+
+Issues (Python API)
+-------------------
+
+
 
 1.5.8
 =====
