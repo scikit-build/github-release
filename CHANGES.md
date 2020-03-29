@@ -7,6 +7,10 @@ CLI
 * Add validation for the REPOSITORY argument. Report an informative message if user
   omitted it.
 
+* Support customization of the GitHub API URL by passing ``--github-api-url`` parameter or by setting the
+  ``GITHUB_API_URL`` environment variable.
+  See [PR#57](https://github.com/j0057/github-release/pull/57). Contributed by [@furlongm](https://github.com/furlongm)
+
 * ``release`` command:
 
   * ``release-notes``: Report a meaningful error if user omitted to set ``EDITOR`` env. variable.
