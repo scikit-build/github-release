@@ -16,6 +16,12 @@ CLI
   * ``release-notes``: Report a meaningful error if user omitted to set ``EDITOR`` env. variable.
 
 
+Python API
+----------
+
+* Add ``github_api_url`` and `set_github_api_url`. See [#61](https://github.com/j0057/github-release/issues/61).
+
+
 Features (CLI and Python API)
 -----------------------------
 
@@ -38,6 +44,11 @@ Issues (CLI and Python API)
   * ``delete`` command:
 
     * Speed-up release deletion. See [PR#51](https://github.com/j0057/github-release/pull/51). Contributed by [@Flamefire](https://github.com/Flamefire)
+
+Issues (Python API)
+-------------------
+
+
 
 1.5.8
 =====
