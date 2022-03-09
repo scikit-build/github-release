@@ -1,5 +1,6 @@
 #!/usr/bin/env python2.7
 
+
 from __future__ import print_function
 
 from datetime import tzinfo, timedelta, datetime
@@ -321,7 +322,9 @@ def get_releases(repo_name, verbose=False):
 
 
 def get_release(repo_name, tag_name):
+    time.sleep(5)
     releases = get_releases(repo_name)
+
     try:
         release = next(r for r in releases if r['tag_name'] == tag_name)
         return release
