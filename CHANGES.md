@@ -25,7 +25,7 @@ Python API
 Features (CLI and Python API)
 -----------------------------
 
-* ``delete`` command:
+* ``release`` command:
 
   * `delete`:
 
@@ -44,6 +44,10 @@ Issues (CLI and Python API)
   * ``delete`` command:
 
     * Speed-up release deletion. See [PR#51](https://github.com/j0057/github-release/pull/51). Contributed by [@Flamefire](https://github.com/Flamefire)
+
+  * ``edit`` command:
+
+    * Explicitly check if body exceed maximum size.
 
 Issues (Python API)
 -------------------
