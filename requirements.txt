@@ -1,3 +1,4 @@
 click
 linkheader
 requests
+backoff~=2.1.2
