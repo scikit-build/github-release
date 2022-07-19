@@ -427,6 +427,10 @@ def patch_release(repo_name, current_tag_name, **values):
             current_tag_name, "\n  ".join(updated)))
         print("")
 
+    if len(values.get("body", "")) >= 125000:
+        raise Exception('Failed to update release {0}. Description has {1} characters and maximum is 125000 characters'.format(
+          release["tag_name"], len(values["body"])))
+
     data.update(values)
 
     if not dry_run:
