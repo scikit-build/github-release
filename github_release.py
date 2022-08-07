@@ -322,7 +322,18 @@ def get_releases(repo_name, verbose=False):
     return releases
 
 
+@backoff.on_predicate(backoff.expo, lambda x: x is None, max_time=5)
 def get_release(repo_name, tag_name):
+    """Return release
+
+    .. note::
+
+        If the release is not found (e.g the release was just created and
+        the GitHub response is not yet updated), this function is called again by
+        leveraging the `backoff` decorator.
+
+        See https://github.com/j0057/github-release/issues/67
+    """
     releases = get_releases(repo_name)
     try:
         release = next(r for r in releases if r['tag_name'] == tag_name)
