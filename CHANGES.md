@@ -39,6 +39,10 @@ Issues (CLI and Python API)
 
 * ``release`` command:
 
+  * ``create`` command:
+
+    * Do not attempt to upload assets on release create if none provided. See issue [#68](https://github.com/j0057/github-release/issues/68). Contributed by [@rly](https://github.com/rly)
+
   * ``release-notes``:
 
     * Fix use python 3 support

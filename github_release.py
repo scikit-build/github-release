@@ -536,7 +536,7 @@ def gh_release_create(repo_name, tag_name, asset_pattern=None, name=None, body=N
                            title="created '%s' release" % tag_name)
     else:
         print("created '%s' release (dry_run)" % tag_name)
-    if asset_pattern is not None:
+    if asset_pattern:
         gh_asset_upload(repo_name, tag_name, asset_pattern, dry_run=dry_run)
 
 
