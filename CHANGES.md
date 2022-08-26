@@ -60,6 +60,9 @@ Issues (Python API)
 
 * ``get_releases``: Add [backoff](https://github.com/litl/backoff#readme) decorator for retrying call in case of unresponsive GitHub API. Contributed by [@owais](https://github.com/owais) following original idea from [@dgerosa](https://github.com/dgerosa).
 
+* ``get_release``: Add [backoff](https://github.com/litl/backoff#readme) decorator for retrying call in case the release was just created and
+the GitHub response is not yet updated. Fix issue [#67](https://github.com/j0057/github-release/pull/67). Contributed by [@rly](https://github.com/rly) and suggested by [@owais](https://github.com/owais).
+
 
 1.5.8
 =====
