@@ -35,6 +35,8 @@ Features (CLI and Python API)
 Issues (CLI and Python API)
 ---------------------------
 
+* Fix click 8 support using ``ProgressBar.length is not None`` instead of the obsolete ``ProgressBar.length_known``. Contributed by [@rly](https://github.com/rly)
+
 * ``release`` command:
 
   * ``release-notes``:
