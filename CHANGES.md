@@ -1,6 +1,12 @@
 Next Release
 ============
 
+Issues (CLI and Python API)
+---------------------------
+
+* Fix GitHub API authentication using new style personal token prefixed with `ghp_`. See issue [#63](https://github.com/j0057/github-release/issues/63) and [GitHub Blog: Authentication token format updates](https://github.blog/changelog/2021-03-31-authentication-token-format-updates-are-generally-available/). Contributed by [@wechuli](https://github.com/wechuli)
+
+
 1.5.9
 =====
 
