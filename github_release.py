@@ -76,7 +76,9 @@ def _request(*args, **kwargs):
     if not token:
         token = os.environ.get("GITHUB_TOKEN", None)
     if token and with_auth:
-        kwargs["auth"] = (token, 'x-oauth-basic')
+        # Using Bearer token authentication instead of Basic Authentication
+        kwargs['headers'] = kwargs.get('headers', {})
+        kwargs['headers']['Authorization'] = 'Bearer ' + token
     for _ in range(3):
         response = request(*args, **kwargs)
         is_travis = os.getenv("TRAVIS",  None) is not None
