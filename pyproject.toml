@@ -1,0 +1,46 @@
+[project]
+name = "githubrelease"
+version = "1.5.9"
+description = "Command-line tool to easily manage GitHub releases, assets, and references"
+authors = [
+    {name = "Joost Molenaar", email = "j.j.molenaar@gmail.com"},
+    {name = "Jean-Christophe Fillion-Robin", email = "jchris.fillionr@kitware.com"},
+]
+license = {text = "Apache"}
+readme = "README.md"
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Natural Language :: English",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Version Control",
+    "Topic :: System :: Software Distribution",
+]
+
+requires-python = ">=3.8.1,<4.0"
+dependencies = [
+    "backoff~=2.1.2",
+    "click",
+    "linkheader",
+    "requests",
+]
+
+[project.urls]
+Homepage = "https://github.com/j0057/github-release"
+
+[project.scripts]
+github-asset = "github_release:gh_asset"
+github-release = "github_release:gh_release"
+githubrelease = "github_release:main"
+
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
