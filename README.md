@@ -56,6 +56,7 @@ Python, you should probably look into project like [github3py](http://github3py.
       * [release command](#release-command)
       * [asset command](#asset-command)
       * [ref command](#ref-command)
+      * [commit command](#commit-command)
    * [using the module](#using-the-module)
    * [testing](#testing)
    * [maintainers: how to make a release ?](#maintainers-how-to-make-a-release-)
@@ -283,6 +284,21 @@ It understands the following commands:
 | create    | ref sha                                | create reference (e.g heads/foo, tags/foo) |
 | list      | [--tags] [--pattern PATTERN]           | list all references                        |
 | delete    | pattern [--tags] [--keep-pattern KEEP_PATTERN] | delete selected references                 |
+
+
+## ``commit`` command
+
+This command deals with git commits. The general usage is:
+
+```bash
+githubrelease commit username/reponame command [options]
+```
+
+It understands the following commands:
+
+| command   | parameters                             | description                                |
+|-----------|----------------------------------------|--------------------------------------------|
+| get       | sha                                    | get commit properties                      |
 
 
 # using the module
